@@ -6,6 +6,7 @@ import '../models/quiz_model.dart';
 import '../services/ai_service.dart';
 import '../services/visited_topics_service.dart';
 import '../services/supabase_service.dart';
+import '../services/learning_repository.dart';
 import '../main.dart';
 import 'quiz_screen.dart';
 
@@ -23,6 +24,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   AITutorial? _tutorial;
   String? _error;
   int _currentStepIndex = 0;
+  final LearningRepository _repository = LearningRepository();
 
   void _showQuiz() async {
     if (_tutorial == null) return;
@@ -36,7 +38,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
     );
 
     try {
-      final quiz = await aiService.generateQuiz(widget.topic, _tutorial!.summary);
+      final quiz = await _repository.getQuizForTopic(widget.topic.id, widget.topic.title);
       if (!mounted) return;
       Navigator.pop(context);
 
@@ -79,57 +81,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
     });
 
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final cachedData = await supabaseService.getTopicDetails(user.uid, widget.topic.id);
-
-        if (cachedData != null) {
-          final steps = (cachedData['steps'] as List)
-              .map((step) => TutorialStep.fromJson(step as Map<String, dynamic>))
-              .toList();
-
-          setState(() {
-            _tutorial = AITutorial(
-              topicId: widget.topic.id,
-              topicTitle: widget.topic.title,
-              summary: cachedData['summary'] as String,
-              steps: steps,
-              generatedAt: DateTime.parse(cachedData['created_at'] as String),
-            );
-            _isLoading = false;
-          });
-          return;
-        }
-      }
-
-      await _generateTutorial();
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _generateTutorial() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      final tutorial = await aiService.generateTutorial(widget.topic);
-
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await supabaseService.saveTopicDetails(
-          userId: user.uid,
-          topicId: widget.topic.id,
-          topicTitle: widget.topic.title,
-          summary: tutorial.summary,
-          steps: tutorial.steps.map((step) => step.toJson()).toList(),
-        );
-      }
+      final tutorial = await _repository.getTutorialForTopic(widget.topic.id, widget.topic.title);
 
       setState(() {
         _tutorial = tutorial;
@@ -141,6 +93,10 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _generateTutorial() async {
+    await _checkAndGenerateTutorial();
   }
 
   // Removed navigation to API config; no longer needed

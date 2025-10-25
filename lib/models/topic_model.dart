@@ -89,4 +89,14 @@ class AITutorial {
       generatedAt: DateTime.parse(json['generatedAt'] as String),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'topicId': topicId,
+      'topicTitle': topicTitle,
+      'steps': steps.map((step) => step.toJson()).toList(),
+      'summary': summary,
+      'generatedAt': generatedAt.toIso8601String(),
+    };
+  }
 }

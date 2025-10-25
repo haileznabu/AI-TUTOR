@@ -114,27 +114,27 @@ class AIService {
 
   bool get isConfigured => _apiKey.isNotEmpty;
 
-  Future<AITutorial> generateTutorial(Topic topic) async {
+  Future<AITutorial> generateTutorial(String topicTitle) async {
     if (!isConfigured) {
       throw Exception('API key not configured. Please set your API key first.');
     }
 
     try {
-      final String prompt = _buildPrompt(topic);
+      final String prompt = _buildPromptFromTitle(topicTitle);
       final Map<String, dynamic> response = await _callGeminiAPI(prompt);
-      return _parseResponse(response, topic);
+      return _parseResponseFromTitle(response, topicTitle);
     } catch (e) {
       throw Exception('Failed to generate tutorial: $e');
     }
   }
 
-  Future<Quiz> generateQuiz(Topic topic, String tutorialSummary) async {
+  Future<Quiz> generateQuiz(String topicTitle) async {
     if (!isConfigured) {
       throw Exception('API key not configured. Please set your API key first.');
     }
 
     try {
-      final String prompt = _buildQuizPrompt(topic, tutorialSummary);
+      final String prompt = _buildQuizPromptFromTitle(topicTitle);
       final Map<String, dynamic> response = await _callGeminiAPI(prompt);
       return Quiz.fromJson(response);
     } catch (e) {
@@ -154,13 +154,9 @@ class AIService {
     }
   }
 
-  String _buildPrompt(Topic topic) {
+  String _buildPromptFromTitle(String topicTitle) {
     return '''
-Create a comprehensive step-by-step tutorial for the topic: "${topic.title}"
-
-Description: ${topic.description}
-Difficulty: ${topic.difficulty}
-Estimated time: ${topic.estimatedMinutes} minutes
+Create a comprehensive step-by-step tutorial for the topic: "$topicTitle"
 
 Please provide:
 1. A brief summary of what the learner will achieve
@@ -187,11 +183,9 @@ Format the response as JSON with this structure:
 ''';
   }
 
-  String _buildQuizPrompt(Topic topic, String tutorialSummary) {
+  String _buildQuizPromptFromTitle(String topicTitle) {
     return '''
-Create a quiz to test understanding of the topic: "${topic.title}"
-
-Tutorial Summary: $tutorialSummary
+Create a quiz to test understanding of the topic: "$topicTitle"
 
 Generate 5 multiple-choice questions that test key concepts from this topic.
 
@@ -312,12 +306,10 @@ Rules:
     }
   }
 
-  // Removed OpenAI-specific methods since provider is fixed to Gemini
-
-  AITutorial _parseResponse(Map<String, dynamic> response, Topic topic) {
+  AITutorial _parseResponseFromTitle(Map<String, dynamic> response, String topicTitle) {
     return AITutorial(
-      topicId: topic.id,
-      topicTitle: topic.title,
+      topicId: topicTitle.toLowerCase().replaceAll(' ', '_'),
+      topicTitle: topicTitle,
       steps: (response['steps'] as List)
           .map((step) => TutorialStep.fromJson(step as Map<String, dynamic>))
           .toList(),

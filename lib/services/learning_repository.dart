@@ -1,8 +1,16 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../models/data_models.dart';
+import '../models/topic_model.dart';
+import '../models/quiz_model.dart';
+import 'firestore_service.dart';
+import 'firebase_auth_service.dart';
+import 'ai_service.dart';
 
 class LearningRepository {
+  final FirestoreService _firestoreService = FirestoreService();
+  final FirebaseAuthService _authService = FirebaseAuthService();
+  final AIService _aiService = AIService();
   Future<UserProfile> fetchUserProfile() async {
     final String fallbackName =
         FirebaseAuth.instance.currentUser?.displayName ?? 'Learner';
@@ -169,6 +177,108 @@ class LearningRepository {
           difficulty: 'Beginner',
         ),
       ],
+    );
+  }
+
+  Future<AITutorial> getTutorialForTopic(String topicId, String topicTitle) async {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    final cachedTutorial = await _firestoreService.getTutorial(
+      userId: userId,
+      topicId: topicId,
+    );
+
+    if (cachedTutorial != null) {
+      return cachedTutorial;
+    }
+
+    final generatedTutorial = await _aiService.generateTutorial(topicTitle);
+
+    await _firestoreService.saveTutorial(
+      userId: userId,
+      topicId: topicId,
+      tutorial: generatedTutorial,
+    );
+
+    await _firestoreService.addVisitedTopic(
+      userId: userId,
+      topicId: topicId,
+    );
+
+    return generatedTutorial;
+  }
+
+  Future<Quiz> getQuizForTopic(String topicId, String topicTitle) async {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    final cachedQuiz = await _firestoreService.getQuiz(
+      userId: userId,
+      topicId: topicId,
+    );
+
+    if (cachedQuiz != null) {
+      return cachedQuiz;
+    }
+
+    final generatedQuiz = await _aiService.generateQuiz(topicTitle);
+
+    await _firestoreService.saveQuiz(
+      userId: userId,
+      topicId: topicId,
+      quiz: generatedQuiz,
+    );
+
+    return generatedQuiz;
+  }
+
+  Future<void> saveProgress(String topicId, int progress) async {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    await _firestoreService.saveUserProgress(
+      userId: userId,
+      topicId: topicId,
+      progress: progress,
+    );
+  }
+
+  Future<Map<String, int>> getUserProgress() async {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      return {};
+    }
+
+    return await _firestoreService.getUserProgress(userId);
+  }
+
+  Future<List<String>> getVisitedTopics() async {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      return [];
+    }
+
+    return await _firestoreService.getVisitedTopics(userId);
+  }
+
+  Future<void> saveQuizResult(String topicId, int score, int totalQuestions) async {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    await _firestoreService.saveQuizResult(
+      userId: userId,
+      topicId: topicId,
+      score: score,
+      totalQuestions: totalQuestions,
     );
   }
 }
