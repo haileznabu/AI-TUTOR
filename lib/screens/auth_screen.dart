@@ -55,12 +55,18 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       final user = userCredential.user;
 
       if (user != null) {
-        await supabaseService.createOrUpdateUserProfile(
-          user.uid,
-          email: null,
-          displayName: 'Anonymous User',
-          isAnonymous: true,
-        );
+        if (supabaseService.isInitialized) {
+          try {
+            await supabaseService.createOrUpdateUserProfile(
+              user.uid,
+              email: null,
+              displayName: 'Anonymous User',
+              isAnonymous: true,
+            );
+          } catch (e) {
+            debugPrint('Failed to sync user profile to Supabase: $e');
+          }
+        }
 
         if (!mounted) return;
         Navigator.of(context).pushReplacement(
@@ -267,13 +273,17 @@ class _SignInFormState extends State<SignInForm> {
                 password: password,
               );
 
-              if (userCredential.user != null) {
-                await supabaseService.createOrUpdateUserProfile(
-                  userCredential.user!.uid,
-                  email: userCredential.user!.email,
-                  displayName: userCredential.user!.displayName,
-                  isAnonymous: false,
-                );
+              if (userCredential.user != null && supabaseService.isInitialized) {
+                try {
+                  await supabaseService.createOrUpdateUserProfile(
+                    userCredential.user!.uid,
+                    email: userCredential.user!.email,
+                    displayName: userCredential.user!.displayName,
+                    isAnonymous: false,
+                  );
+                } catch (e) {
+                  debugPrint('Failed to sync user profile to Supabase: $e');
+                }
               }
 
               if (!mounted) return;
@@ -409,13 +419,17 @@ class _SignUpFormState extends State<SignUpForm> {
                 await credential.user!.updateDisplayName(name);
               }
 
-              if (credential.user != null) {
-                await supabaseService.createOrUpdateUserProfile(
-                  credential.user!.uid,
-                  email: credential.user!.email,
-                  displayName: name.isNotEmpty ? name : null,
-                  isAnonymous: false,
-                );
+              if (credential.user != null && supabaseService.isInitialized) {
+                try {
+                  await supabaseService.createOrUpdateUserProfile(
+                    credential.user!.uid,
+                    email: credential.user!.email,
+                    displayName: name.isNotEmpty ? name : null,
+                    isAnonymous: false,
+                  );
+                } catch (e) {
+                  debugPrint('Failed to sync user profile to Supabase: $e');
+                }
               }
 
               if (!mounted) return;

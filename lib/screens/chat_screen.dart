@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,7 +28,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _loadChatHistory() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
+      if (user != null && supabaseService.isInitialized) {
         final chatData = await supabaseService.getChatMessages(user.uid);
         setState(() {
           _messages.clear();
@@ -251,12 +252,16 @@ class _ChatScreenState extends State<ChatScreen> {
       _messageController.clear();
     });
 
-    if (user != null) {
-      await supabaseService.saveChatMessage(
-        userId: user.uid,
-        role: 'user',
-        content: text,
-      );
+    if (user != null && supabaseService.isInitialized) {
+      try {
+        await supabaseService.saveChatMessage(
+          userId: user.uid,
+          role: 'user',
+          content: text,
+        );
+      } catch (e) {
+        debugPrint('Failed to save user message to Supabase: $e');
+      }
     }
 
     try {
@@ -265,12 +270,16 @@ class _ChatScreenState extends State<ChatScreen> {
         _messages.add(ChatMessage(role: 'assistant', content: reply));
       });
 
-      if (user != null) {
-        await supabaseService.saveChatMessage(
-          userId: user.uid,
-          role: 'assistant',
-          content: reply,
-        );
+      if (user != null && supabaseService.isInitialized) {
+        try {
+          await supabaseService.saveChatMessage(
+            userId: user.uid,
+            role: 'assistant',
+            content: reply,
+          );
+        } catch (e) {
+          debugPrint('Failed to save assistant message to Supabase: $e');
+        }
       }
     } catch (e) {
       if (!mounted) return;

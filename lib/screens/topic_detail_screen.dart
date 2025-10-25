@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -69,7 +70,13 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   Future<void> _recordVisit() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      await supabaseService.recordTopicVisit(user.uid, widget.topic.id);
+      try {
+        if (supabaseService.isInitialized) {
+          await supabaseService.recordTopicVisit(user.uid, widget.topic.id);
+        }
+      } catch (e) {
+        debugPrint('Failed to record visit to Supabase: $e');
+      }
     }
     VisitedTopicsService.recordVisit(widget.topic.id);
   }
@@ -87,11 +94,35 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
         _tutorial = tutorial;
         _isLoading = false;
       });
+
+      await _loadProgress();
     } catch (e) {
       setState(() {
         _error = e.toString();
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadProgress() async {
+    try {
+      final progressMap = await _repository.getUserProgress();
+      final savedProgress = progressMap[widget.topic.id] ?? 0;
+      if (savedProgress > 0 && savedProgress < (_tutorial?.steps.length ?? 0)) {
+        setState(() {
+          _currentStepIndex = savedProgress;
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to load progress: $e');
+    }
+  }
+
+  Future<void> _saveProgress() async {
+    try {
+      await _repository.saveProgress(widget.topic.id, _currentStepIndex);
+    } catch (e) {
+      debugPrint('Failed to save progress: $e');
     }
   }
 
@@ -492,6 +523,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                   setState(() {
                     _currentStepIndex--;
                   });
+                  _saveProgress();
                 },
                 icon: const Icon(Icons.arrow_back),
                 label: const Text('Previous'),
@@ -511,6 +543,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                   setState(() {
                     _currentStepIndex++;
                   });
+                  _saveProgress();
                 },
                 icon: const Icon(Icons.arrow_forward),
                 label: const Text('Next'),

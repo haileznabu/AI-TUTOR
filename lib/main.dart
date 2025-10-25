@@ -21,12 +21,18 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  await dotenv.load(fileName: ".env");
+  try {
+    await dotenv.load(fileName: ".env");
 
-  final supabaseUrl = dotenv.env['VITE_SUPABASE_URL'] ?? '';
-  final supabaseAnonKey = dotenv.env['VITE_SUPABASE_SUPABASE_ANON_KEY'] ?? '';
+    final supabaseUrl = dotenv.env['VITE_SUPABASE_URL'] ?? '';
+    final supabaseAnonKey = dotenv.env['VITE_SUPABASE_SUPABASE_ANON_KEY'] ?? '';
 
-  await supabaseService.initialize(supabaseUrl, supabaseAnonKey);
+    if (supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty) {
+      await supabaseService.initialize(supabaseUrl, supabaseAnonKey);
+    }
+  } catch (e) {
+    debugPrint('Supabase initialization failed: $e');
+  }
 
   runApp(ProviderScope(child: const MyApp()));
 }
@@ -75,12 +81,18 @@ class LaunchDecider extends StatelessWidget {
     final User? currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser != null) {
-      await supabaseService.createOrUpdateUserProfile(
-        currentUser.uid,
-        email: currentUser.email,
-        displayName: currentUser.displayName,
-        isAnonymous: currentUser.isAnonymous,
-      );
+      try {
+        if (supabaseService.isInitialized) {
+          await supabaseService.createOrUpdateUserProfile(
+            currentUser.uid,
+            email: currentUser.email,
+            displayName: currentUser.displayName,
+            isAnonymous: currentUser.isAnonymous,
+          );
+        }
+      } catch (e) {
+        debugPrint('Failed to sync user profile to Supabase: $e');
+      }
       return const HomeScreen();
     }
 

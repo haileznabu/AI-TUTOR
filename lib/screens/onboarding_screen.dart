@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -65,12 +66,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       final user = userCredential.user;
 
       if (user != null) {
-        await supabaseService.createOrUpdateUserProfile(
-          user.uid,
-          email: null,
-          displayName: 'Anonymous User',
-          isAnonymous: true,
-        );
+        if (supabaseService.isInitialized) {
+          try {
+            await supabaseService.createOrUpdateUserProfile(
+              user.uid,
+              email: null,
+              displayName: 'Anonymous User',
+              isAnonymous: true,
+            );
+          } catch (e) {
+            debugPrint('Failed to sync user profile to Supabase: $e');
+          }
+        }
 
         if (!mounted) return;
         Navigator.of(context).pushReplacement(
