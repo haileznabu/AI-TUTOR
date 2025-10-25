@@ -232,4 +232,63 @@ class FirestoreService {
       throw Exception('Failed to get quiz results: $e');
     }
   }
+
+  Future<void> saveChatMessage({
+    required String userId,
+    required String role,
+    required String content,
+  }) async {
+    try {
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('chatMessages')
+          .add({
+        'role': role,
+        'content': content,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to save chat message: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getChatMessages(String userId, {int limit = 50}) async {
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('chatMessages')
+          .orderBy('createdAt', descending: false)
+          .limit(limit)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'role': data['role'] as String,
+          'content': data['content'] as String,
+          'createdAt': (data['createdAt'] as Timestamp?)?.toDate(),
+        };
+      }).toList();
+    } catch (e) {
+      throw Exception('Failed to get chat messages: $e');
+    }
+  }
+
+  Future<void> clearChatMessages(String userId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('chatMessages')
+          .get();
+
+      for (var doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+    } catch (e) {
+      throw Exception('Failed to clear chat messages: $e');
+    }
+  }
 }

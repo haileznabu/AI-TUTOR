@@ -6,13 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'firebase_options.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/auth_screen.dart';
-import 'services/supabase_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,19 +18,6 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  try {
-    await dotenv.load(fileName: ".env");
-
-    final supabaseUrl = dotenv.env['VITE_SUPABASE_URL'] ?? '';
-    final supabaseAnonKey = dotenv.env['VITE_SUPABASE_SUPABASE_ANON_KEY'] ?? '';
-
-    if (supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty) {
-      await supabaseService.initialize(supabaseUrl, supabaseAnonKey);
-    }
-  } catch (e) {
-    debugPrint('Supabase initialization failed: $e');
-  }
 
   runApp(ProviderScope(child: const MyApp()));
 }
@@ -81,18 +66,6 @@ class LaunchDecider extends StatelessWidget {
     final User? currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser != null) {
-      try {
-        if (supabaseService.isInitialized) {
-          await supabaseService.createOrUpdateUserProfile(
-            currentUser.uid,
-            email: currentUser.email,
-            displayName: currentUser.displayName,
-            isAnonymous: currentUser.isAnonymous,
-          );
-        }
-      } catch (e) {
-        debugPrint('Failed to sync user profile to Supabase: $e');
-      }
       return const HomeScreen();
     }
 

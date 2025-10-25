@@ -34,8 +34,7 @@ lib/
 │   ├── ai_service.dart           # AI integration
 │   ├── firebase_auth_service.dart # Firebase authentication
 │   ├── firestore_service.dart    # Firestore database operations
-│   ├── learning_repository.dart  # Main repository
-│   └── supabase_service.dart     # Supabase integration
+│   └── learning_repository.dart  # Main repository
 └── widgets/         # Reusable UI components
 ```
 
@@ -47,7 +46,6 @@ lib/
   - Firestore database created
   - Android/iOS apps configured
 - Gemini AI API key for AI features
-- Supabase project (optional, for additional features)
 
 ## Setup Instructions
 
@@ -64,16 +62,7 @@ cd ai_tutor
 flutter pub get
 ```
 
-### 3. Configure Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-### 4. Configure Gemini API Key
+### 3. Configure Gemini API Key
 
 Provide your Gemini API key at run/build time using a dart-define:
 
@@ -88,7 +77,7 @@ flutter build apk --dart-define=GEMINI_API_KEY=your_key_here
 flutter build ios --dart-define=GEMINI_API_KEY=your_key_here
 ```
 
-### 5. Firebase Configuration
+### 4. Firebase Configuration
 
 The project includes Firebase configuration files:
 - `android/app/google-services.json` (Android)
@@ -106,10 +95,11 @@ Ensure your Firebase project has:
     ├── visitedTopics/{topicId}
     ├── tutorials/{topicId}
     ├── quizzes/{topicId}
-    └── quizResults/
+    ├── quizResults/
+    └── chatMessages/
   ```
 
-### 6. Run the App
+### 5. Run the App
 
 ```bash
 # For Android
@@ -176,7 +166,6 @@ Check if user is authenticated
   - Cloud Firestore (v5.4.4)
 - **Riverpod**: State management
 - **Google Fonts**: Typography
-- **Supabase**: Additional backend features
 - **Gemini AI**: Content generation
 
 ## Data Persistence Strategy
@@ -203,6 +192,11 @@ Check if user is authenticated
 5. **Quiz Results** (`users/{userId}/quizResults/`):
    - Score and completion data
    - Historical performance tracking
+
+6. **Chat Messages** (`users/{userId}/chatMessages/`):
+   - Stores conversation history with AI tutor
+   - Message role (user/assistant) and content
+   - Timestamp for chronological ordering
 
 ### Why This Approach?
 

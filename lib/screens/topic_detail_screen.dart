@@ -6,7 +6,6 @@ import '../models/topic_model.dart';
 import '../models/quiz_model.dart';
 import '../services/ai_service.dart';
 import '../services/visited_topics_service.dart';
-import '../services/supabase_service.dart';
 import '../services/learning_repository.dart';
 import '../main.dart';
 import 'quiz_screen.dart';
@@ -68,16 +67,6 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   }
 
   Future<void> _recordVisit() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      try {
-        if (supabaseService.isInitialized) {
-          await supabaseService.recordTopicVisit(user.uid, widget.topic.id);
-        }
-      } catch (e) {
-        debugPrint('Failed to record visit to Supabase: $e');
-      }
-    }
     VisitedTopicsService.recordVisit(widget.topic.id);
   }
 

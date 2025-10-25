@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../main.dart';
 import '../services/ai_service.dart';
-import '../services/supabase_service.dart';
+import '../services/firestore_service.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -16,6 +16,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final List<ChatMessage> _messages = <ChatMessage>[];
+  final FirestoreService _firestoreService = FirestoreService();
   bool _isSending = false;
   bool _isLoading = true;
 
@@ -28,8 +29,8 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _loadChatHistory() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user != null && supabaseService.isInitialized) {
-        final chatData = await supabaseService.getChatMessages(user.uid);
+      if (user != null) {
+        final chatData = await _firestoreService.getChatMessages(user.uid);
         setState(() {
           _messages.clear();
           _messages.addAll(
@@ -44,6 +45,7 @@ class _ChatScreenState extends State<ChatScreen> {
         setState(() => _isLoading = false);
       }
     } catch (e) {
+      debugPrint('Failed to load chat history: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -252,15 +254,15 @@ class _ChatScreenState extends State<ChatScreen> {
       _messageController.clear();
     });
 
-    if (user != null && supabaseService.isInitialized) {
+    if (user != null) {
       try {
-        await supabaseService.saveChatMessage(
+        await _firestoreService.saveChatMessage(
           userId: user.uid,
           role: 'user',
           content: text,
         );
       } catch (e) {
-        debugPrint('Failed to save user message to Supabase: $e');
+        debugPrint('Failed to save user message to Firestore: $e');
       }
     }
 
@@ -270,15 +272,15 @@ class _ChatScreenState extends State<ChatScreen> {
         _messages.add(ChatMessage(role: 'assistant', content: reply));
       });
 
-      if (user != null && supabaseService.isInitialized) {
+      if (user != null) {
         try {
-          await supabaseService.saveChatMessage(
+          await _firestoreService.saveChatMessage(
             userId: user.uid,
             role: 'assistant',
             content: reply,
           );
         } catch (e) {
-          debugPrint('Failed to save assistant message to Supabase: $e');
+          debugPrint('Failed to save assistant message to Firestore: $e');
         }
       }
     } catch (e) {

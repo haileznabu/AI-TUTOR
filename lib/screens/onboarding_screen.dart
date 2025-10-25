@@ -6,7 +6,6 @@ import '../main.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
 import '../widgets/onboarding_ui_component.dart';
-import '../services/supabase_service.dart';
 
 // 🧭 ONBOARDING
 class OnboardingScreen extends StatefulWidget {
@@ -66,19 +65,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       final user = userCredential.user;
 
       if (user != null) {
-        if (supabaseService.isInitialized) {
-          try {
-            await supabaseService.createOrUpdateUserProfile(
-              user.uid,
-              email: null,
-              displayName: 'Anonymous User',
-              isAnonymous: true,
-            );
-          } catch (e) {
-            debugPrint('Failed to sync user profile to Supabase: $e');
-          }
-        }
-
         if (!mounted) return;
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const HomeScreen()),
