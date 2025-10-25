@@ -4,9 +4,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'firebase_options.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/auth_screen.dart';
@@ -15,7 +17,9 @@ import 'services/supabase_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   await dotenv.load(fileName: ".env");
 
@@ -65,6 +69,9 @@ class LaunchDecider extends StatelessWidget {
   const LaunchDecider({super.key});
 
   Future<Widget> _getInitialScreen() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool hasCompletedOnboarding = prefs.getBool(onboarding_complete_v2) ?? false;
+
     final User? currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser != null) {
@@ -77,7 +84,11 @@ class LaunchDecider extends StatelessWidget {
       return const HomeScreen();
     }
 
-    return const OnboardingScreen();
+    if (!hasCompletedOnboarding) {
+      return const OnboardingScreen();
+    }
+
+    return const AuthScreen();
   }
 
   @override
@@ -85,10 +96,37 @@ class LaunchDecider extends StatelessWidget {
     return FutureBuilder<Widget>(
       future: _getInitialScreen(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const _Splash();
         }
-        return snapshot.data!;
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: kDarkGradient,
+                ),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error: ${snapshot.error}',
+                      style: const TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+        return snapshot.data ?? const _Splash();
       },
     );
   }

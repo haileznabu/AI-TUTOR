@@ -41,14 +41,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(onboarding_complete_v2, true);
 
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+
     if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const AuthScreen()),
-    );
+
+    if (currentUser != null) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const AuthScreen()),
+      );
+    }
   }
 
   Future<void> _skipToHome() async {
     try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(onboarding_complete_v2, true);
+
       final userCredential = await FirebaseAuth.instance.signInAnonymously();
       final user = userCredential.user;
 
