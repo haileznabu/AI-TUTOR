@@ -186,17 +186,21 @@ class LearningRepository {
       throw Exception('User not authenticated');
     }
 
+    debugPrint('[Tutorial Cache] Checking cache for topicId: $topicId');
     final cachedTutorial = await _firestoreService.getTutorial(
       userId: userId,
       topicId: topicId,
     );
 
     if (cachedTutorial != null) {
+      debugPrint('[Tutorial Cache] Found cached tutorial for: $topicId');
       return cachedTutorial;
     }
 
+    debugPrint('[Tutorial Cache] No cache found. Generating tutorial for: $topicTitle');
     final generatedTutorial = await _aiService.generateTutorial(topicTitle);
 
+    debugPrint('[Tutorial Cache] Saving tutorial to Firestore for: $topicId');
     await _firestoreService.saveTutorial(
       userId: userId,
       topicId: topicId,
@@ -217,17 +221,21 @@ class LearningRepository {
       throw Exception('User not authenticated');
     }
 
+    debugPrint('[Quiz Cache] Checking cache for topicId: $topicId');
     final cachedQuiz = await _firestoreService.getQuiz(
       userId: userId,
       topicId: topicId,
     );
 
     if (cachedQuiz != null) {
+      debugPrint('[Quiz Cache] Found cached quiz for: $topicId');
       return cachedQuiz;
     }
 
+    debugPrint('[Quiz Cache] No cache found. Generating quiz for: $topicTitle');
     final generatedQuiz = await _aiService.generateQuiz(topicTitle);
 
+    debugPrint('[Quiz Cache] Saving quiz to Firestore for: $topicId');
     await _firestoreService.saveQuiz(
       userId: userId,
       topicId: topicId,

@@ -24,6 +24,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   AITutorial? _tutorial;
   String? _error;
   int _currentStepIndex = 0;
+  bool _isFromCache = false;
   final LearningRepository _repository = LearningRepository();
 
   void _showQuiz() async {
@@ -79,8 +80,12 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
     try {
       final tutorial = await _repository.getTutorialForTopic(widget.topic.id, widget.topic.title);
 
+      final minutesOld = DateTime.now().difference(tutorial.generatedAt).inMinutes;
+      final isFromCache = minutesOld > 1;
+
       setState(() {
         _tutorial = tutorial;
+        _isFromCache = isFromCache;
         _isLoading = false;
       });
 
@@ -179,6 +184,24 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                if (_isFromCache && !_isLoading)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.offline_bolt,
+                        size: 14,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Loaded from cache',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),

@@ -30,7 +30,9 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
+        debugPrint('[Chat Cache] Loading chat history for user: ${user.uid}');
         final chatData = await _firestoreService.getChatMessages(user.uid);
+        debugPrint('[Chat Cache] Loaded ${chatData.length} messages from Firestore');
         setState(() {
           _messages.clear();
           _messages.addAll(
@@ -42,10 +44,11 @@ class _ChatScreenState extends State<ChatScreen> {
           _isLoading = false;
         });
       } else {
+        debugPrint('[Chat Cache] No user logged in, skipping cache load');
         setState(() => _isLoading = false);
       }
     } catch (e) {
-      debugPrint('Failed to load chat history: $e');
+      debugPrint('[Chat Cache] Failed to load chat history: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -256,38 +259,57 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (user != null) {
       try {
+        debugPrint('[Chat Cache] Saving user message to Firestore');
         await _firestoreService.saveChatMessage(
           userId: user.uid,
           role: 'user',
           content: text,
         );
       } catch (e) {
-        debugPrint('Failed to save user message to Firestore: $e');
+        debugPrint('[Chat Cache] Failed to save user message to Firestore: $e');
       }
     }
 
     try {
+      debugPrint('[Chat] Sending message to AI service');
       final reply = await aiService.sendChatResponse(_messages);
-      setState(() {
-        _messages.add(ChatMessage(role: 'assistant', content: reply));
-      });
+      debugPrint('[Chat] Received reply from AI: ${reply.substring(0, reply.length > 50 ? 50 : reply.length)}...');
 
-      if (user != null) {
-        try {
-          await _firestoreService.saveChatMessage(
-            userId: user.uid,
-            role: 'assistant',
-            content: reply,
-          );
-        } catch (e) {
-          debugPrint('Failed to save assistant message to Firestore: $e');
+      if (mounted) {
+        setState(() {
+          _messages.add(ChatMessage(role: 'assistant', content: reply));
+        });
+
+        if (user != null) {
+          try {
+            debugPrint('[Chat Cache] Saving assistant response to Firestore');
+            await _firestoreService.saveChatMessage(
+              userId: user.uid,
+              role: 'assistant',
+              content: reply,
+            );
+          } catch (e) {
+            debugPrint('[Chat Cache] Failed to save assistant message to Firestore: $e');
+          }
         }
       }
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Chat failed: $e'), backgroundColor: Colors.redAccent),
-      );
+      debugPrint('Chat error details: $e');
+      if (mounted) {
+        setState(() {
+          _messages.add(ChatMessage(
+            role: 'assistant',
+            content: 'Sorry, I encountered an error. Please try again.',
+          ));
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to get response: ${e.toString()}'),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {
