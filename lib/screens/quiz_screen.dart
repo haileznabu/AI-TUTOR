@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/quiz_model.dart';
 import '../main.dart';
+import '../services/visited_topics_service.dart';
+import '../services/firestore_service.dart';
 
 class QuizScreen extends StatefulWidget {
   final Quiz quiz;
   final String topicTitle;
+  final String topicId;
 
   const QuizScreen({
     super.key,
     required this.quiz,
     required this.topicTitle,
+    required this.topicId,
   });
 
   @override
@@ -23,6 +28,7 @@ class _QuizScreenState extends State<QuizScreen> {
   bool _hasAnswered = false;
   int _correctAnswers = 0;
   bool _quizCompleted = false;
+  final FirestoreService _firestoreService = FirestoreService();
 
   void _selectAnswer(int index) {
     if (_hasAnswered) return;
@@ -37,7 +43,7 @@ class _QuizScreenState extends State<QuizScreen> {
     });
   }
 
-  void _nextQuestion() {
+  void _nextQuestion() async {
     if (_currentQuestionIndex < widget.quiz.questions.length - 1) {
       setState(() {
         _currentQuestionIndex++;
@@ -48,6 +54,29 @@ class _QuizScreenState extends State<QuizScreen> {
       setState(() {
         _quizCompleted = true;
       });
+      await _markTopicAsCompleted();
+    }
+  }
+
+  Future<void> _markTopicAsCompleted() async {
+    try {
+      await VisitedTopicsService.recordVisit(
+        widget.topicId,
+        progressPercentage: 100,
+      );
+
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        await _firestoreService.saveUserProgress(
+          userId: userId,
+          topicId: widget.topicId,
+          progressPercentage: 100,
+          currentStepIndex: 0,
+          totalSteps: 1,
+        );
+      }
+    } catch (e) {
+      debugPrint('Failed to mark topic as completed: $e');
     }
   }
 

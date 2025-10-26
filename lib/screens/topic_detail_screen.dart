@@ -49,6 +49,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
           builder: (_) => QuizScreen(
             quiz: quiz,
             topicTitle: widget.topic.title,
+            topicId: widget.topic.id,
           ),
         ),
       );

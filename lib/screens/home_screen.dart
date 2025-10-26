@@ -205,7 +205,8 @@ class _AiTopicExplorer extends StatefulWidget {
 class _AiTopicExplorerState extends State<_AiTopicExplorer> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  String? _selectedCategory; // null = All
+  String? _selectedCategory;
+  final Map<String, bool> _expandedCategories = {}; // null = All
 
   static const List<Topic> _allTopics = [
     Topic(
@@ -771,10 +772,89 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
     );
   }
 
+  Widget _buildCategoryTopics(BuildContext context, String category, List<Topic> topics) {
+    final isExpanded = _expandedCategories[category] ?? false;
+    final displayTopics = isExpanded ? topics : topics.take(3).toList();
+    final hasMore = topics.length > 3;
+
+    return Column(
+      children: [
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: displayTopics.length,
+          itemBuilder: (context, index) {
+            final topic = displayTopics[index];
+            return _TopicCard(
+              topic: topic,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TopicDetailScreen(topic: topic),
+                  ),
+                ).then((_) => setState(() {}));
+              },
+            );
+          },
+        ),
+        if (hasMore)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 4),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.15)),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          _expandedCategories[category] = !isExpanded;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              isExpanded ? Icons.expand_less : Icons.expand_more,
+                              color: kPrimaryColor,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              isExpanded ? 'Wrap up' : 'See more (${topics.length - 3} more)',
+                              style: const TextStyle(
+                                color: kPrimaryColor,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _buildTopicsList(BuildContext context) {
     final topics = _filteredTopics;
 
-    // Group by category
     final Map<String, List<Topic>> byCategory = <String, List<Topic>>{};
     for (final t in topics) {
       byCategory.putIfAbsent(t.category, () => <Topic>[]).add(t);
@@ -828,25 +908,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
                   ),
             ),
           ),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: entry.value.length,
-            itemBuilder: (context, index) {
-              final topic = entry.value[index];
-              return _TopicCard(
-                topic: topic,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TopicDetailScreen(topic: topic),
-                    ),
-                  ).then((_) => setState(() {}));
-                },
-              );
-            },
-          ),
+          _buildCategoryTopics(context, entry.key, entry.value),
         ],
       ],
     );
