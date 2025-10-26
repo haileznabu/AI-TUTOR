@@ -581,7 +581,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
             child: _chatMessages.isEmpty
                 ? Center(
                     child: Text(
-                      'Ask a question about this topic',
+                      'Ask follow-up...',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.5),
                         fontSize: 14,
@@ -634,7 +634,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                     controller: _chatController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      hintText: 'Ask about this topic...',
+                      hintText: 'Ask follow-up questions about this topic...',
                       hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
