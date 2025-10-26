@@ -3,12 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'dart:ui';
-import '../main.dart'; // For constants and AuthGate
-import '../providers/learning_providers.dart'; // Added import for providers
+import '../main.dart';
+import '../providers/learning_providers.dart';
 import 'chat_screen.dart';
+import 'profile_screen.dart';
 import '../models/topic_model.dart';
 import 'topic_detail_screen.dart';
 import '../services/visited_topics_service.dart';
+import '../services/firestore_service.dart';
 
 // 🏠 HOME
 class HomeScreen extends ConsumerStatefulWidget {
@@ -61,7 +63,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       0 => _HomeTab(onSignOut: () => _signOut(context), onRefresh: _refreshAll),
       1 => const ChatScreen(),
       2 => const _PlaceholderTab(title: 'My Progress'),
-      _ => const _PlaceholderTab(title: 'Profile'),
+      _ => const ProfileScreen(),
     };
 
     return Scaffold(
@@ -255,7 +257,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
       id: '6',
       title: 'Material Design',
       description: 'Implement Material Design principles',
-      category: 'Arts & Humanities',
+      category: 'Programming',
       icon: Icons.design_services,
       estimatedMinutes: 25,
       difficulty: 'Beginner',
@@ -264,7 +266,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
       id: '7',
       title: 'Responsive Layouts',
       description: 'Build responsive UIs for all screen sizes',
-      category: 'Arts & Humanities',
+      category: 'Programming',
       icon: Icons.devices,
       estimatedMinutes: 30,
       difficulty: 'Intermediate',
@@ -327,7 +329,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
       id: '14',
       title: 'Accessibility',
       description: 'Build accessible apps with a11y best practices',
-      category: 'Arts & Humanities',
+      category: 'Programming',
       icon: Icons.accessibility,
       estimatedMinutes: 30,
       difficulty: 'Beginner',
@@ -549,6 +551,30 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
     }).toList();
   }
 
+  Future<List<dynamic>> _loadRecentlyVisitedWithProgress() async {
+    final ids = await VisitedTopicsService.getVisitedIdsOrdered();
+    final localProgressMap = await VisitedTopicsService.getVisitedTopicsWithProgress();
+
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    Map<String, int> firestoreProgressMap = {};
+
+    if (userId != null) {
+      try {
+        final firestoreService = FirestoreService();
+        firestoreProgressMap = await firestoreService.getUserProgress(userId);
+      } catch (e) {
+        debugPrint('Failed to load Firestore progress: $e');
+      }
+    }
+
+    final mergedProgressMap = <String, int>{};
+    for (final id in ids) {
+      mergedProgressMap[id] = firestoreProgressMap[id] ?? localProgressMap[id] ?? 0;
+    }
+
+    return [ids, mergedProgressMap];
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -663,10 +689,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
     }
 
     return FutureBuilder<List<dynamic>>(
-      future: Future.wait([
-        VisitedTopicsService.getVisitedIdsOrdered(),
-        VisitedTopicsService.getVisitedTopicsWithProgress(),
-      ]),
+      future: _loadRecentlyVisitedWithProgress(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const SizedBox.shrink();

@@ -112,6 +112,16 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
         setState(() {
           _currentStepIndex = savedProgress;
         });
+      } else {
+        final localProgress = await VisitedTopicsService.getTopicProgress(widget.topic.id);
+        if (localProgress > 0 && _tutorial != null) {
+          final stepIndex = ((localProgress / 100) * _tutorial!.steps.length).floor();
+          if (stepIndex < _tutorial!.steps.length) {
+            setState(() {
+              _currentStepIndex = stepIndex;
+            });
+          }
+        }
       }
     } catch (e) {
       debugPrint('Failed to load progress: $e');

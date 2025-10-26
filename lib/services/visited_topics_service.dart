@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'firestore_service.dart';
 
 class VisitedTopicsService {
   static const String _prefsKey = 'visited_topics_v2';
   static const int _maxItems = 20;
+  static final FirestoreService _firestoreService = FirestoreService();
 
   static Future<void> recordVisit(String topicId, {int progressPercentage = 0}) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -25,6 +28,11 @@ class VisitedTopicsService {
     }
 
     await prefs.setString(_prefsKey, jsonEncode(entries));
+
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      await _firestoreService.addVisitedTopic(userId: userId, topicId: topicId);
+    }
   }
 
   static Future<List<String>> getVisitedIdsOrdered() async {
