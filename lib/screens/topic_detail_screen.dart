@@ -252,7 +252,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    if (_isFromCache && !_isLoading) ..[
+                    if (_isFromCache && !_isLoading) ...[
                       Icon(
                         Icons.offline_bolt,
                         size: isDesktop ? 16 : 14,
