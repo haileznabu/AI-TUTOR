@@ -119,7 +119,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   bool _isDesktopPlatform() {
-    if (kIsWeb) return true;
+    if (kIsWeb) {
+      return MediaQuery.of(context).size.width > 800;
+    }
     return Theme.of(context).platform == TargetPlatform.windows ||
            Theme.of(context).platform == TargetPlatform.linux ||
            Theme.of(context).platform == TargetPlatform.macOS;
