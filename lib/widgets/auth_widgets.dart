@@ -139,82 +139,14 @@ class SocialRow extends StatelessWidget {
         SocialButton(
           icon: Icons.g_mobiledata,
           label: 'Google',
-          onPressed: () async {
-            if (!context.mounted) return;
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => const Center(
-                child: CircularProgressIndicator(color: kPrimaryColor),
-              ),
-            );
-            try {
-              final googleProvider = GoogleAuthProvider();
-              if (kIsWeb) {
-                await FirebaseAuth.instance.signInWithPopup(googleProvider);
-              } else {
-                await FirebaseAuth.instance.signInWithProvider(googleProvider);
-              }
-              if (!context.mounted) return;
-              Navigator.of(context, rootNavigator: true).pop();
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const HomeScreen()),
-                (route) => false,
-              );
-            } on FirebaseAuthException catch (e) {
-              if (!context.mounted) return;
-              Navigator.of(context, rootNavigator: true).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(e.message ?? 'Google sign-in failed')),
-              );
-            } catch (_) {
-              if (!context.mounted) return;
-              Navigator.of(context, rootNavigator: true).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Google sign-in error')),
-              );
-            }
-          },
+          isDisabled: true,
+          onPressed: null,
         ),
         SocialButton(
           icon: Icons.apple_rounded,
           label: 'Apple',
-          onPressed: () async {
-            if (!context.mounted) return;
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => const Center(
-                child: CircularProgressIndicator(color: kPrimaryColor),
-              ),
-            );
-            try {
-              final appleProvider = OAuthProvider('apple.com');
-              if (kIsWeb) {
-                await FirebaseAuth.instance.signInWithPopup(appleProvider);
-              } else {
-                await FirebaseAuth.instance.signInWithProvider(appleProvider);
-              }
-              if (!context.mounted) return;
-              Navigator.of(context, rootNavigator: true).pop();
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const HomeScreen()),
-                (route) => false,
-              );
-            } on FirebaseAuthException catch (e) {
-              if (!context.mounted) return;
-              Navigator.of(context, rootNavigator: true).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(e.message ?? 'Apple sign-in failed')),
-              );
-            } catch (_) {
-              if (!context.mounted) return;
-              Navigator.of(context, rootNavigator: true).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Apple sign-in error')),
-              );
-            }
-          },
+          isDisabled: true,
+          onPressed: null,
         ),
         SocialButton(
           icon: Icons.arrow_forward_rounded,
@@ -257,6 +189,7 @@ class SocialButton extends StatefulWidget {
   final String label;
   final VoidCallback? onPressed;
   final bool isSkip;
+  final bool isDisabled;
 
   const SocialButton({
     super.key,
@@ -264,6 +197,7 @@ class SocialButton extends StatefulWidget {
     required this.label,
     this.onPressed,
     this.isSkip = false,
+    this.isDisabled = false,
   });
 
   @override
@@ -357,6 +291,59 @@ class _SocialButtonState extends State<SocialButton>
               ),
             ),
           ),
+        ),
+      );
+    }
+
+    if (widget.isDisabled) {
+      return Opacity(
+        opacity: 0.5,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white24,
+                  width: 1.2,
+                ),
+                color: Colors.transparent,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(widget.icon, color: Colors.white54, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    widget.label,
+                    style: const TextStyle(color: Colors.white54, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              top: -8,
+              right: -8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade700,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white24, width: 0.5),
+                ),
+                child: const Text(
+                  'Disabled',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }
