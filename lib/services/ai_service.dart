@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/topic_model.dart';
 import '../models/quiz_model.dart';
 
@@ -109,8 +110,7 @@ class ChatMessage {
 }
 
 class AIService {
-  // Read from compile-time or runtime env; no hardcoded default
-  static const String _apiKey = String.fromEnvironment('GEMINI_API_KEY', defaultValue: '');
+  String get _apiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
 
   bool get isConfigured => _apiKey.isNotEmpty;
 
