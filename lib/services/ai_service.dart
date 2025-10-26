@@ -110,7 +110,11 @@ class ChatMessage {
 }
 
 class AIService {
-  String get _apiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
+  String get _apiKey {
+    const apiKey = String.fromEnvironment('GEMINI_API_KEY');
+    if (apiKey.isNotEmpty) return apiKey;
+    return dotenv.env['GEMINI_API_KEY'] ?? '';
+  }
 
   bool get isConfigured => _apiKey.isNotEmpty;
 
