@@ -31,46 +31,46 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyD8S5o5VxWtUzXDksjoITGm3s7NyxYP8Vs',
-    appId: '1:209455312625:web:cad8f86499d72871e04350',
-    messagingSenderId: '209455312625',
-    projectId: 'ai-tutor-cedad',
-    authDomain: 'ai-tutor-cedad.firebaseapp.com',
-    storageBucket: 'ai-tutor-cedad.firebasestorage.app',
+    apiKey: 'AIzaSyBUK7Tqltu29luyvRM9s-rxLXrfg6pSloA',
+    appId: '1:1056660119849:web:64806579c8bd0e69bbd738',
+    messagingSenderId: '1056660119849',
+    projectId: 'plp-ai-tutor',
+    authDomain: 'plp-ai-tutor.firebaseapp.com',
+    storageBucket: 'plp-ai-tutor.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD8S5o5VxWtUzXDksjoITGm3s7NyxYP8Vs',
-    appId: '1:209455312625:android:cad8f86499d72871e04350',
-    messagingSenderId: '209455312625',
-    projectId: 'ai-tutor-cedad',
-    storageBucket: 'ai-tutor-cedad.firebasestorage.app',
+    apiKey: 'AIzaSyBUK7Tqltu29luyvRM9s-rxLXrfg6pSloA',
+    appId: '1:1056660119849:android:64806579c8bd0e69bbd738',
+    messagingSenderId: '1056660119849',
+    projectId: 'plp-ai-tutor',
+    storageBucket: 'plp-ai-tutor.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyD8S5o5VxWtUzXDksjoITGm3s7NyxYP8Vs',
-    appId: '1:209455312625:ios:cad8f86499d72871e04350',
-    messagingSenderId: '209455312625',
-    projectId: 'ai-tutor-cedad',
-    storageBucket: 'ai-tutor-cedad.firebasestorage.app',
+    apiKey: 'AIzaSyBUK7Tqltu29luyvRM9s-rxLXrfg6pSloA',
+    appId: '1:1056660119849:ios:64806579c8bd0e69bbd738',
+    messagingSenderId: '1056660119849',
+    projectId: 'plp-ai-tutor',
+    storageBucket: 'plp-ai-tutor.firebasestorage.app',
     iosBundleId: 'com.example.aiTutor',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyD8S5o5VxWtUzXDksjoITGm3s7NyxYP8Vs',
-    appId: '1:209455312625:ios:cad8f86499d72871e04350',
-    messagingSenderId: '209455312625',
-    projectId: 'ai-tutor-cedad',
-    storageBucket: 'ai-tutor-cedad.firebasestorage.app',
+    apiKey: 'AIzaSyBUK7Tqltu29luyvRM9s-rxLXrfg6pSloA',
+    appId: '1:1056660119849:ios:64806579c8bd0e69bbd738',
+    messagingSenderId: '1056660119849',
+    projectId: 'plp-ai-tutor',
+    storageBucket: 'plp-ai-tutor.firebasestorage.app',
     iosBundleId: 'com.example.aiTutor',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyD8S5o5VxWtUzXDksjoITGm3s7NyxYP8Vs',
-    appId: '1:209455312625:web:cad8f86499d72871e04350',
-    messagingSenderId: '209455312625',
-    projectId: 'ai-tutor-cedad',
-    authDomain: 'ai-tutor-cedad.firebaseapp.com',
-    storageBucket: 'ai-tutor-cedad.firebasestorage.app',
+    apiKey: 'AIzaSyBUK7Tqltu29luyvRM9s-rxLXrfg6pSloA',
+    appId: '1:1056660119849:web:64806579c8bd0e69bbd738',
+    messagingSenderId: '1056660119849',
+    projectId: 'plp-ai-tutor',
+    authDomain: 'plp-ai-tutor.firebaseapp.com',
+    storageBucket: 'plp-ai-tutor.firebasestorage.app',
   );
 }

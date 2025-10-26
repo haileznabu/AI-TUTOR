@@ -69,10 +69,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
       }
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      String errorMessage = 'Failed to sign in anonymously';
+
+      if (e.code == 'operation-not-allowed') {
+        errorMessage = 'Anonymous authentication is not enabled. Please enable it in Firebase Console.';
+      } else if (e.code == 'network-request-failed') {
+        errorMessage = 'Network error. Please check your internet connection.';
+      } else {
+        errorMessage = 'Authentication error: ${e.message}';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          duration: const Duration(seconds: 5),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to sign in: $e')),
+        SnackBar(
+          content: Text('Unexpected error: $e'),
+          duration: const Duration(seconds: 5),
+        ),
       );
     }
   }
