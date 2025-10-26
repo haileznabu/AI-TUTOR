@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "209455312625",
-    "project_id": "ai-tutor-cedad",
-    "storage_bucket": "ai-tutor-cedad.firebasestorage.app"
+    "project_number": "1056660119849",
+    "project_id": "plp-ai-tutor",
+    "storage_bucket": "plp-ai-tutor.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:209455312625:android:cad8f86499d72871e04350",
+        "mobilesdk_app_id": "1:1056660119849:android:64806579c8bd0e69bbd738",
         "android_client_info": {
           "package_name": "com.example.ai_tutor"
         }
       },
       "oauth_client": [
         {
-          "client_id": "209455312625-k81hi2eenla8h1uc7u1fe3ou7k129b6b.apps.googleusercontent.com",
+          "client_id": "1056660119849-vcmk3680mmsfme4ggh42mrappgjneesq.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyD8S5o5VxWtUzXDksjoITGm3s7NyxYP8Vs"
+          "current_key": "AIzaSyBUK7Tqltu29luyvRM9s-rxLXrfg6pSloA"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "209455312625-k81hi2eenla8h1uc7u1fe3ou7k129b6b.apps.googleusercontent.com",
+              "client_id": "1056660119849-vcmk3680mmsfme4ggh42mrappgjneesq.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

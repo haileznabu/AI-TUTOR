@@ -1,9 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../models/topic_model.dart';
-import '../models/quiz_model.dart';
 import '../services/ai_service.dart';
 import '../services/visited_topics_service.dart';
 import '../services/learning_repository.dart';
