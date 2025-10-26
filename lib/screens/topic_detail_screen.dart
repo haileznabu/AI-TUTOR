@@ -10,6 +10,8 @@ import '../services/learning_repository.dart';
 import '../main.dart';
 import 'quiz_screen.dart';
 
+export '../services/ai_service.dart' show ChatMessage;
+
 class TopicDetailScreen extends StatefulWidget {
   final Topic topic;
 
@@ -27,6 +29,10 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   int _maxStepReached = 0;
   bool _isFromCache = false;
   final LearningRepository _repository = LearningRepository();
+  bool _showChat = false;
+  final List<ChatMessage> _chatMessages = [];
+  final TextEditingController _chatController = TextEditingController();
+  bool _isSendingMessage = false;
 
   void _showQuiz() async {
     if (_tutorial == null) return;
@@ -346,13 +352,14 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSummaryCard(),
-                const SizedBox(height: 16),
+                if (_currentStepIndex == 0) _buildSummaryCard(),
+                if (_currentStepIndex == 0) const SizedBox(height: 16),
                 _buildCurrentStep(),
               ],
             ),
           ),
         ),
+        if (_showChat) _buildChatSection(),
         if (_tutorial!.steps.length > 1) _buildNavigationButtons(),
       ],
     );
@@ -558,11 +565,176 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
     );
   }
 
+  Widget _buildChatSection() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.3),
+        border: Border(
+          top: BorderSide(color: Colors.white.withOpacity(0.15)),
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            height: 200,
+            padding: const EdgeInsets.all(16),
+            child: _chatMessages.isEmpty
+                ? Center(
+                    child: Text(
+                      'Ask a question about this topic',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.5),
+                        fontSize: 14,
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _chatMessages.length,
+                    itemBuilder: (context, index) {
+                      final message = _chatMessages[index];
+                      final isUser = message.role == 'user';
+                      return Align(
+                        alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.7,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isUser
+                                ? kPrimaryColor
+                                : Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            message.content,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.2),
+              border: Border(
+                top: BorderSide(color: Colors.white.withOpacity(0.1)),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _chatController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Ask about this topic...',
+                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: kPrimaryColor),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    enabled: !_isSendingMessage,
+                    onSubmitted: (_) => _sendChatMessage(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: _isSendingMessage ? null : _sendChatMessage,
+                  icon: _isSendingMessage
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: kPrimaryColor,
+                          ),
+                        )
+                      : const Icon(Icons.send, color: kPrimaryColor),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _sendChatMessage() async {
+    if (_chatController.text.trim().isEmpty || _tutorial == null) return;
+
+    final userMessage = _chatController.text.trim();
+    _chatController.clear();
+
+    setState(() {
+      _chatMessages.add(ChatMessage(role: 'user', content: userMessage));
+      _isSendingMessage = true;
+    });
+
+    try {
+      final currentStep = _tutorial!.steps[_currentStepIndex];
+      final contextMessages = [
+        ChatMessage(
+          role: 'user',
+          content: 'I am learning about "${widget.topic.title}". Current step: "${currentStep.title}". Content: "${currentStep.content}". Please answer my question in the context of this topic.',
+        ),
+        ..._chatMessages,
+      ];
+
+      final response = await aiService.sendChatResponse(contextMessages);
+
+      setState(() {
+        _chatMessages.add(ChatMessage(role: 'assistant', content: response));
+        _isSendingMessage = false;
+      });
+    } catch (e) {
+      setState(() {
+        _chatMessages.add(ChatMessage(
+          role: 'assistant',
+          content: 'Sorry, I encountered an error: $e',
+        ));
+        _isSendingMessage = false;
+      });
+    }
+  }
+
   Widget _buildNavigationButtons() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
         children: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _showChat = !_showChat;
+                if (!_showChat) {
+                  _chatMessages.clear();
+                }
+              });
+            },
+            icon: Icon(
+              _showChat ? Icons.close : Icons.chat_bubble_outline,
+              color: Colors.white,
+            ),
+            tooltip: _showChat ? 'Close Chat' : 'Ask Questions',
+          ),
+          const SizedBox(width: 8),
           if (_currentStepIndex > 0)
             Expanded(
               child: ElevatedButton.icon(
