@@ -157,8 +157,7 @@ class _HomeTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool isDesktop = kIsWeb ||
-      MediaQuery.of(context).size.width > 800;
+    final bool isDesktop = MediaQuery.of(context).size.width > 800;
 
     final double maxWidth = isDesktop ? 1200 : double.infinity;
     final EdgeInsets padding = isDesktop
