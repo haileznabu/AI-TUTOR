@@ -134,7 +134,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
     if (_tutorial == null) return;
 
     try {
-      if (_currentStepIndex > _maxStepReached) {
+      if(_currentStepIndex > _maxStepReached) {
         _maxStepReached = _currentStepIndex;
       }
 
