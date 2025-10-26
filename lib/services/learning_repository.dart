@@ -245,16 +245,26 @@ class LearningRepository {
     return generatedQuiz;
   }
 
-  Future<void> saveProgress(String topicId, int progress) async {
+  Future<void> saveProgress(
+    String topicId,
+    int currentStepIndex,
+    int totalSteps,
+  ) async {
     final userId = _authService.currentUserId;
     if (userId == null) {
       throw Exception('User not authenticated');
     }
 
+    final progressPercentage = totalSteps > 0
+        ? ((currentStepIndex / totalSteps) * 100).round()
+        : 0;
+
     await _firestoreService.saveUserProgress(
       userId: userId,
       topicId: topicId,
-      progress: progress,
+      progressPercentage: progressPercentage,
+      currentStepIndex: currentStepIndex,
+      totalSteps: totalSteps,
     );
   }
 
@@ -265,6 +275,15 @@ class LearningRepository {
     }
 
     return await _firestoreService.getUserProgress(userId);
+  }
+
+  Future<Map<String, dynamic>?> getTopicProgressDetails(String topicId) async {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      return null;
+    }
+
+    return await _firestoreService.getTopicProgressDetails(userId, topicId);
   }
 
   Future<List<String>> getVisitedTopics() async {

@@ -8,19 +8,31 @@ class FirestoreService {
   Future<void> saveUserProgress({
     required String userId,
     required String topicId,
-    required int progress,
+    required int progressPercentage,
+    required int currentStepIndex,
+    required int totalSteps,
   }) async {
     try {
-      await _firestore
+      final docRef = _firestore
           .collection('users')
           .doc(userId)
           .collection('progress')
-          .doc(topicId)
-          .set({
-        'topicId': topicId,
-        'progress': progress,
-        'lastUpdated': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+          .doc(topicId);
+
+      final existingDoc = await docRef.get();
+      final existingProgress = existingDoc.exists
+          ? (existingDoc.data()?['progressPercentage'] as int? ?? 0)
+          : 0;
+
+      if (progressPercentage > existingProgress) {
+        await docRef.set({
+          'topicId': topicId,
+          'progressPercentage': progressPercentage,
+          'currentStepIndex': currentStepIndex,
+          'totalSteps': totalSteps,
+          'lastUpdated': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      }
     } catch (e) {
       throw Exception('Failed to save user progress: $e');
     }
@@ -39,12 +51,34 @@ class FirestoreService {
           final data = doc.data();
           return MapEntry(
             data['topicId'] as String,
-            data['progress'] as int,
+            data['progressPercentage'] as int? ?? 0,
           );
         }),
       );
     } catch (e) {
       throw Exception('Failed to get user progress: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> getTopicProgressDetails(String userId, String topicId) async {
+    try {
+      final doc = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('progress')
+          .doc(topicId)
+          .get();
+
+      if (!doc.exists) return null;
+
+      final data = doc.data()!;
+      return {
+        'progressPercentage': data['progressPercentage'] as int? ?? 0,
+        'currentStepIndex': data['currentStepIndex'] as int? ?? 0,
+        'totalSteps': data['totalSteps'] as int? ?? 0,
+      };
+    } catch (e) {
+      throw Exception('Failed to get topic progress details: $e');
     }
   }
 

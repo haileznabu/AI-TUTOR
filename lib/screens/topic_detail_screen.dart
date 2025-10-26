@@ -24,6 +24,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   AITutorial? _tutorial;
   String? _error;
   int _currentStepIndex = 0;
+  int _maxStepReached = 0;
   bool _isFromCache = false;
   final LearningRepository _repository = LearningRepository();
 
@@ -64,17 +65,11 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   void initState() {
     super.initState();
     _checkAndGenerateTutorial();
-    _recordVisit();
-  }
-
-  Future<void> _recordVisit() async {
-    final progress = _calculateProgressPercentage();
-    VisitedTopicsService.recordVisit(widget.topic.id, progressPercentage: progress);
   }
 
   int _calculateProgressPercentage() {
     if (_tutorial == null || _tutorial!.steps.isEmpty) return 0;
-    return ((_currentStepIndex / _tutorial!.steps.length) * 100).round();
+    return ((_maxStepReached / _tutorial!.steps.length) * 100).round();
   }
 
   Future<void> _checkAndGenerateTutorial() async {
@@ -106,12 +101,16 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
 
   Future<void> _loadProgress() async {
     try {
-      final progressMap = await _repository.getUserProgress();
-      final savedProgress = progressMap[widget.topic.id] ?? 0;
-      if (savedProgress > 0 && savedProgress < (_tutorial?.steps.length ?? 0)) {
-        setState(() {
-          _currentStepIndex = savedProgress;
-        });
+      final details = await _repository.getTopicProgressDetails(widget.topic.id);
+
+      if (details != null) {
+        final savedStepIndex = details['currentStepIndex'] as int? ?? 0;
+        if (savedStepIndex >= 0 && savedStepIndex < (_tutorial?.steps.length ?? 0)) {
+          setState(() {
+            _currentStepIndex = savedStepIndex;
+            _maxStepReached = savedStepIndex;
+          });
+        }
       } else {
         final localProgress = await VisitedTopicsService.getTopicProgress(widget.topic.id);
         if (localProgress > 0 && _tutorial != null) {
@@ -119,20 +118,37 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
           if (stepIndex < _tutorial!.steps.length) {
             setState(() {
               _currentStepIndex = stepIndex;
+              _maxStepReached = stepIndex;
             });
           }
         }
       }
+
+      await _saveProgress();
     } catch (e) {
       debugPrint('Failed to load progress: $e');
     }
   }
 
   Future<void> _saveProgress() async {
+    if (_tutorial == null) return;
+
     try {
-      await _repository.saveProgress(widget.topic.id, _currentStepIndex);
+      if (_currentStepIndex > _maxStepReached) {
+        _maxStepReached = _currentStepIndex;
+      }
+
+      await _repository.saveProgress(
+        widget.topic.id,
+        _maxStepReached,
+        _tutorial!.steps.length,
+      );
+
       final progress = _calculateProgressPercentage();
-      await VisitedTopicsService.recordVisit(widget.topic.id, progressPercentage: progress);
+      await VisitedTopicsService.recordVisit(
+        widget.topic.id,
+        progressPercentage: progress,
+      );
     } catch (e) {
       debugPrint('Failed to save progress: $e');
     }
@@ -346,7 +362,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
       padding: const EdgeInsets.all(16.0),
       child: Row(
         children: List.generate(_tutorial!.steps.length, (index) {
-          final isCompleted = index < _currentStepIndex;
+          final isCompleted = index <= _maxStepReached;
           final isCurrent = index == _currentStepIndex;
 
           return Expanded(
@@ -354,7 +370,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
               height: 4,
               margin: EdgeInsets.only(right: index < _tutorial!.steps.length - 1 ? 8 : 0),
               decoration: BoxDecoration(
-                color: isCompleted || isCurrent
+                color: isCompleted
                     ? kPrimaryColor
                     : Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(2),

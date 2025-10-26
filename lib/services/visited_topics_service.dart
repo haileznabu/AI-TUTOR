@@ -15,12 +15,17 @@ class VisitedTopicsService {
 
     entries = entries.where((e) => e is Map && e['id'] != null && e['ts'] != null).toList();
 
+    final existingIndex = entries.indexWhere((e) => e['id'] == topicId);
+    final existingProgress = existingIndex >= 0 ? (entries[existingIndex]['progress'] ?? 0) as int : 0;
+
+    final maxProgress = progressPercentage > existingProgress ? progressPercentage : existingProgress;
+
     entries.removeWhere((e) => e['id'] == topicId);
 
     entries.insert(0, <String, dynamic>{
       'id': topicId,
       'ts': DateTime.now().millisecondsSinceEpoch,
-      'progress': progressPercentage,
+      'progress': maxProgress,
     });
 
     if (entries.length > _maxItems) {
@@ -77,6 +82,27 @@ class VisitedTopicsService {
   static Future<int> getTopicProgress(String topicId) async {
     final progressMap = await getVisitedTopicsWithProgress();
     return progressMap[topicId] ?? 0;
+  }
+
+  static Future<void> updateProgress(String topicId, int progressPercentage) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? raw = prefs.getString(_prefsKey);
+    if (raw == null) return;
+
+    try {
+      final List<dynamic> entries = jsonDecode(raw) as List<dynamic>;
+      final index = entries.indexWhere((e) => e is Map && e['id'] == topicId);
+
+      if (index >= 0) {
+        final existingProgress = (entries[index]['progress'] ?? 0) as int;
+        if (progressPercentage > existingProgress) {
+          entries[index]['progress'] = progressPercentage;
+          entries[index]['ts'] = DateTime.now().millisecondsSinceEpoch;
+          await prefs.setString(_prefsKey, jsonEncode(entries));
+        }
+      }
+    } catch (_) {
+    }
   }
 
   static Future<void> clearAll() async {

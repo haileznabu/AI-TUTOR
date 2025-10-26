@@ -562,6 +562,15 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
       try {
         final firestoreService = FirestoreService();
         firestoreProgressMap = await firestoreService.getUserProgress(userId);
+
+        for (final id in firestoreProgressMap.keys) {
+          final firestoreProgress = firestoreProgressMap[id] ?? 0;
+          final localProgress = localProgressMap[id] ?? 0;
+
+          if (firestoreProgress > localProgress) {
+            await VisitedTopicsService.updateProgress(id, firestoreProgress);
+          }
+        }
       } catch (e) {
         debugPrint('Failed to load Firestore progress: $e');
       }
@@ -569,7 +578,9 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
 
     final mergedProgressMap = <String, int>{};
     for (final id in ids) {
-      mergedProgressMap[id] = firestoreProgressMap[id] ?? localProgressMap[id] ?? 0;
+      final firestoreProgress = firestoreProgressMap[id] ?? 0;
+      final localProgress = localProgressMap[id] ?? 0;
+      mergedProgressMap[id] = firestoreProgress > localProgress ? firestoreProgress : localProgress;
     }
 
     return [ids, mergedProgressMap];
