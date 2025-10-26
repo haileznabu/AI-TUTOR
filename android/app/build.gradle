@@ -28,9 +28,10 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false      // keep code shrinking off
-            shrinkResources false    // disable resource shrinking
+            minifyEnabled true
+            shrinkResources true
             signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
