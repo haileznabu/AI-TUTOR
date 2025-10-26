@@ -68,7 +68,13 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   }
 
   Future<void> _recordVisit() async {
-    VisitedTopicsService.recordVisit(widget.topic.id);
+    final progress = _calculateProgressPercentage();
+    VisitedTopicsService.recordVisit(widget.topic.id, progressPercentage: progress);
+  }
+
+  int _calculateProgressPercentage() {
+    if (_tutorial == null || _tutorial!.steps.isEmpty) return 0;
+    return ((_currentStepIndex / _tutorial!.steps.length) * 100).round();
   }
 
   Future<void> _checkAndGenerateTutorial() async {
@@ -115,6 +121,8 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   Future<void> _saveProgress() async {
     try {
       await _repository.saveProgress(widget.topic.id, _currentStepIndex);
+      final progress = _calculateProgressPercentage();
+      await VisitedTopicsService.recordVisit(widget.topic.id, progressPercentage: progress);
     } catch (e) {
       debugPrint('Failed to save progress: $e');
     }

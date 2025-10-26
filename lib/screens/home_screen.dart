@@ -662,13 +662,22 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
       return const SizedBox.shrink();
     }
 
-    return FutureBuilder<List<String>>(
-      future: VisitedTopicsService.getVisitedIdsOrdered(),
+    return FutureBuilder<List<dynamic>>(
+      future: Future.wait([
+        VisitedTopicsService.getVisitedIdsOrdered(),
+        VisitedTopicsService.getVisitedTopicsWithProgress(),
+      ]),
       builder: (context, snapshot) {
-        if (!snapshot.hasData || (snapshot.data?.isEmpty ?? true)) {
+        if (!snapshot.hasData) {
           return const SizedBox.shrink();
         }
-        final ids = snapshot.data!;
+        final ids = snapshot.data![0] as List<String>;
+        final progressMap = snapshot.data![1] as Map<String, int>;
+
+        if (ids.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
         final List<Topic> visitedTopics = ids
             .map((id) => _idToTopic[id])
             .whereType<Topic>()
@@ -704,8 +713,10 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
                     separatorBuilder: (_, __) => const SizedBox(width: 12),
                     itemBuilder: (context, index) {
                       final topic = visitedTopics[index];
+                      final progress = progressMap[topic.id] ?? 0;
                       return _VisitedTopicTile(
                         topic: topic,
+                        progressPercentage: progress,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -948,8 +959,13 @@ class _TopicCard extends StatelessWidget {
 
 class _VisitedTopicTile extends StatelessWidget {
   final Topic topic;
+  final int progressPercentage;
   final VoidCallback onTap;
-  const _VisitedTopicTile({required this.topic, required this.onTap});
+  const _VisitedTopicTile({
+    required this.topic,
+    required this.progressPercentage,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -960,40 +976,82 @@ class _VisitedTopicTile extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [kPrimaryColor, kAccentColor]),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(topic.icon, color: Colors.white, size: 22),
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [kPrimaryColor, kAccentColor]),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(topic.icon, color: Colors.white, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          topic.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          topic.category,
+                          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      topic.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
+              const SizedBox(height: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Progress',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.6),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
+                      Text(
+                        '$progressPercentage%',
+                        style: const TextStyle(
+                          color: kPrimaryColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progressPercentage / 100,
+                      backgroundColor: Colors.white.withOpacity(0.1),
+                      valueColor: const AlwaysStoppedAnimation<Color>(kPrimaryColor),
+                      minHeight: 6,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      topic.category,
-                      style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),
