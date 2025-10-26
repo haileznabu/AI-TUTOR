@@ -325,4 +325,22 @@ class FirestoreService {
       throw Exception('Failed to clear chat messages: $e');
     }
   }
+
+  Future<String?> getGeminiApiKey() async {
+    try {
+      final doc = await _firestore
+          .collection('config')
+          .doc('api_keys')
+          .get();
+
+      if (!doc.exists) {
+        return null;
+      }
+
+      final data = doc.data();
+      return data?['gemini_api_key'] as String?;
+    } catch (e) {
+      throw Exception('Failed to get Gemini API key: $e');
+    }
+  }
 }

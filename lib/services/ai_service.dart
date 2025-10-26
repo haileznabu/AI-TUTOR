@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'firestore_service.dart';
 import '../models/topic_model.dart';
 import '../models/quiz_model.dart';
 
@@ -110,16 +112,44 @@ class ChatMessage {
 }
 
 class AIService {
-  String get _apiKey {
+  final FirestoreService _firestoreService = FirestoreService();
+  String? _cachedApiKey;
+
+  Future<String> get _apiKey async {
+    if (_cachedApiKey != null && _cachedApiKey!.isNotEmpty) {
+      return _cachedApiKey!;
+    }
+
+    if (kIsWeb) {
+      try {
+        final key = await _firestoreService.getGeminiApiKey();
+        if (key != null && key.isNotEmpty) {
+          _cachedApiKey = key;
+          return key;
+        }
+      } catch (e) {
+        debugPrint('Failed to fetch API key from Firestore: $e');
+      }
+    }
+
     const apiKey = String.fromEnvironment('GEMINI_API_KEY');
-    if (apiKey.isNotEmpty) return apiKey;
-    return dotenv.env['GEMINI_API_KEY'] ?? '';
+    if (apiKey.isNotEmpty) {
+      _cachedApiKey = apiKey;
+      return apiKey;
+    }
+
+    final envKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+    _cachedApiKey = envKey;
+    return envKey;
   }
 
-  bool get isConfigured => _apiKey.isNotEmpty;
+  Future<bool> get isConfigured async {
+    final key = await _apiKey;
+    return key.isNotEmpty;
+  }
 
   Future<AITutorial> generateTutorial(String topicTitle) async {
-    if (!isConfigured) {
+    if (!await isConfigured) {
       throw Exception('API key not configured. Please set your API key first.');
     }
 
@@ -133,7 +163,7 @@ class AIService {
   }
 
   Future<Quiz> generateQuiz(String topicTitle) async {
-    if (!isConfigured) {
+    if (!await isConfigured) {
       throw Exception('API key not configured. Please set your API key first.');
     }
 
@@ -148,7 +178,7 @@ class AIService {
 
   // Simple chat API for AI tab
   Future<String> sendChatResponse(List<ChatMessage> messages) async {
-    if (!isConfigured) {
+    if (!await isConfigured) {
       throw Exception('API key not configured. Please set your API key first.');
     }
     try {
@@ -234,8 +264,9 @@ Rules:
   }
 
   Future<Map<String, dynamic>> _postToGemini(String prompt, {required int maxTokens}) async {
+    final apiKey = await _apiKey;
     final url = Uri.parse(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$_apiKey');
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey');
 
     final response = await http.post(
       url,
@@ -257,7 +288,9 @@ Rules:
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Gemini API error: ${response.statusCode}');
+      final errorBody = response.body;
+      debugPrint('Gemini API error: ${response.statusCode} - $errorBody');
+      throw Exception('Gemini API error: ${response.statusCode}. ${errorBody.length > 100 ? errorBody.substring(0, 100) : errorBody}');
     }
 
     return jsonDecode(response.body) as Map<String, dynamic>;
@@ -278,8 +311,9 @@ Rules:
   }
 
   Future<String> _callGeminiChat(List<ChatMessage> messages) async {
+    final apiKey = await _apiKey;
     final url = Uri.parse(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$_apiKey');
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey');
 
     // Map messages to Gemini's content format
     final contents = messages.map((m) => {
@@ -306,7 +340,9 @@ Rules:
       final text = data['candidates'][0]['content']['parts'][0]['text'];
       return text as String;
     } else {
-      throw Exception('Gemini API error: ${response.statusCode} ${response.body}');
+      final errorBody = response.body;
+      debugPrint('Gemini API chat error: ${response.statusCode} - $errorBody');
+      throw Exception('Gemini API error: ${response.statusCode}. ${errorBody.length > 100 ? errorBody.substring(0, 100) : errorBody}');
     }
   }
 
