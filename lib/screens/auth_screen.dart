@@ -70,10 +70,196 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final size = MediaQuery.of(context).size;
+    final isDesktop = size.width >= 900;
+    final isTablet = size.width >= 600 && size.width < 900;
+
+    if (isDesktop || isTablet) {
+      return Scaffold(
+        body: Row(
+          children: [
+            // Left panel - Hero section (only on desktop/tablet)
+            Expanded(
+              flex: isDesktop ? 5 : 4,
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: kDarkGradient,
+                  ),
+                ),
+                child: SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.all(isDesktop ? 64 : 40),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const AuthLogo(),
+                        SizedBox(height: isDesktop ? 48 : 32),
+                        Text(
+                          'Welcome to AI Tutor',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: isDesktop ? 48 : 36,
+                            fontWeight: FontWeight.bold,
+                            height: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'Personalized learning powered by AI. Master concepts faster with step-by-step explanations, interactive quizzes, and real-time feedback.',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: isDesktop ? 18 : 16,
+                            height: 1.6,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        _buildFeatureItem(
+                          icon: Icons.psychology_alt,
+                          title: 'AI-Powered Learning',
+                          description: 'Adaptive content tailored to your pace',
+                          isDesktop: isDesktop,
+                        ),
+                        const SizedBox(height: 20),
+                        _buildFeatureItem(
+                          icon: Icons.quiz,
+                          title: 'Interactive Quizzes',
+                          description: 'Test your knowledge with instant feedback',
+                          isDesktop: isDesktop,
+                        ),
+                        const SizedBox(height: 20),
+                        _buildFeatureItem(
+                          icon: Icons.trending_up,
+                          title: 'Track Your Progress',
+                          description: 'Monitor your learning journey',
+                          isDesktop: isDesktop,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Right panel - Auth form
+            Expanded(
+              flex: isDesktop ? 4 : 5,
+              child: Container(
+                color: const Color(0xFF0A0015),
+                child: SafeArea(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton.icon(
+                              onPressed: _handleSkip,
+                              icon: const Icon(Icons.arrow_forward, size: 18),
+                              label: const Text('Skip for now'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white70,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: SingleChildScrollView(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isDesktop ? 80 : 40,
+                              vertical: 20,
+                            ),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 480),
+                              child: FadeTransition(
+                                opacity: _fadeAnimation,
+                                child: SlideTransition(
+                                  position: _slideAnimation,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        isSignIn ? 'Welcome Back' : 'Create Account',
+                                        style: TextStyle(
+                                          fontSize: isDesktop ? 36 : 28,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        isSignIn
+                                            ? 'Sign in to your account to continue your learning journey'
+                                            : 'Join us and start your personalized learning experience',
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.6),
+                                          fontSize: isDesktop ? 16 : 14,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 48),
+                                      AnimatedSwitcher(
+                                        duration: kAnimationNormal,
+                                        child: isSignIn
+                                            ? const SignInForm(key: ValueKey('SignIn'))
+                                            : const SignUpForm(key: ValueKey('SignUp')),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            isSignIn
+                                                ? "Don't have an account? "
+                                                : "Already have an account? ",
+                                            style: TextStyle(
+                                              color: Colors.white.withOpacity(0.6),
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          GestureDetector(
+                                            onTap: _toggleAuthMode,
+                                            child: Text(
+                                              isSignIn ? 'Sign Up' : 'Sign In',
+                                              style: const TextStyle(
+                                                color: kPrimaryColor,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Mobile layout (unchanged - perfect as is)
     return Scaffold(
       body: Stack(
         children: [
-          // Main gradient background with auth content
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -107,7 +293,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                     child: Center(
                       child: SingleChildScrollView(
                         padding:
-                        const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                            const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                         child: FadeTransition(
                           opacity: _fadeAnimation,
                           child: SlideTransition(
@@ -177,6 +363,52 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildFeatureItem({
+    required IconData icon,
+    required String title,
+    required String description,
+    required bool isDesktop,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [kPrimaryColor, kAccentColor],
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: Colors.white, size: isDesktop ? 24 : 20),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isDesktop ? 18 : 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: isDesktop ? 14 : 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
