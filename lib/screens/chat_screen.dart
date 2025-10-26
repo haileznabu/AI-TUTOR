@@ -61,6 +61,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = kIsWeb || MediaQuery.of(context).size.width > 800;
+    final double maxWidth = isDesktop ? 1000 : double.infinity;
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -70,50 +73,71 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       ),
       child: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 8),
-            Expanded(child: _buildChatList()),
-            _buildInputBar(),
-          ],
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxWidth),
+            child: Column(
+              children: [
+                _buildHeader(isDesktop),
+                const SizedBox(height: 8),
+                Expanded(child: _buildChatList(isDesktop)),
+                _buildInputBar(isDesktop),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isDesktop) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(isDesktop ? 32.0 : 16.0),
       child: Row(
         children: [
-          const Icon(Icons.chat_bubble, color: kPrimaryColor, size: 32),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'AI-TUTOR Chat',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [kPrimaryColor, kAccentColor],
               ),
-              Text(
-                'Ask me anything',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: Colors.white70),
-              ),
-            ],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.chat_bubble, color: Colors.white, size: 28),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'AI-TUTOR Chat',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: isDesktop ? 28 : 24,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Ask me anything about your learning journey',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(
+                        color: Colors.white70,
+                        fontSize: isDesktop ? 15 : 14,
+                      ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildChatList() {
+  Widget _buildChatList(bool isDesktop) {
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(color: kPrimaryColor),
@@ -123,16 +147,39 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_messages.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(isDesktop ? 48.0 : 24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.chat_bubble_outline,
-                  size: 64, color: Colors.white.withOpacity(0.3)),
-              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.05),
+                ),
+                child: Icon(
+                  Icons.chat_bubble_outline,
+                  size: isDesktop ? 80 : 64,
+                  color: Colors.white.withOpacity(0.3),
+                ),
+              ),
+              const SizedBox(height: 24),
               Text(
-                'Start the conversation below',
-                style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                'Start the conversation',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: isDesktop ? 20 : 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Ask any question to get started with your learning',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: isDesktop ? 15 : 14,
+                ),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -142,7 +189,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return ListView.builder(
       reverse: true,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(
+        horizontal: isDesktop ? 32 : 12,
+        vertical: isDesktop ? 16 : 8,
+      ),
       itemCount: _messages.length,
       itemBuilder: (context, index) {
         final message = _messages[_messages.length - 1 - index];
@@ -150,24 +200,35 @@ class _ChatScreenState extends State<ChatScreen> {
         return Align(
           alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
+            padding: EdgeInsets.symmetric(vertical: isDesktop ? 8 : 6),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(
                   constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.78),
-                  padding: const EdgeInsets.all(12),
+                    maxWidth: isDesktop
+                      ? 600
+                      : MediaQuery.of(context).size.width * 0.78,
+                  ),
+                  padding: EdgeInsets.all(isDesktop ? 16 : 12),
                   decoration: BoxDecoration(
                     color: (isUser ? kAccentColor : Colors.white)
                         .withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withOpacity(0.15)),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isUser
+                        ? kAccentColor.withOpacity(0.3)
+                        : Colors.white.withOpacity(0.15),
+                    ),
                   ),
                   child: Text(
                     message.content,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isDesktop ? 15 : 14,
+                      height: 1.5,
+                    ),
                   ),
                 ),
               ),
@@ -178,9 +239,14 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildInputBar() {
+  Widget _buildInputBar(bool isDesktop) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+      padding: EdgeInsets.fromLTRB(
+        isDesktop ? 32 : 12,
+        isDesktop ? 16 : 8,
+        isDesktop ? 32 : 12,
+        isDesktop ? 24 : 12,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -196,16 +262,21 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   child: TextField(
                     controller: _messageController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isDesktop ? 15 : 14,
+                    ),
                     minLines: 1,
-                    maxLines: 4,
+                    maxLines: isDesktop ? 5 : 4,
                     decoration: InputDecoration(
                       hintText: 'Type a message...',
                       hintStyle:
                           TextStyle(color: Colors.white.withOpacity(0.5)),
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: isDesktop ? 20 : 16,
+                        vertical: isDesktop ? 16 : 12,
+                      ),
                     ),
                     enabled: !_isSending,
                     onSubmitted: (_) => _handleSend(),
@@ -214,18 +285,18 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          _buildSendButton(),
-          
+          const SizedBox(width: 12),
+          _buildSendButton(isDesktop),
         ],
       ),
     );
   }
 
-  Widget _buildSendButton() {
+  Widget _buildSendButton(bool isDesktop) {
+    final double size = isDesktop ? 52 : 44;
     return SizedBox(
-      height: 44,
-      width: 44,
+      height: size,
+      width: size,
       child: ElevatedButton(
         onPressed: _isSending ? null : _handleSend,
         style: ElevatedButton.styleFrom(
@@ -235,12 +306,15 @@ class _ChatScreenState extends State<ChatScreen> {
           shape: const CircleBorder(),
         ),
         child: _isSending
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            ? SizedBox(
+                height: isDesktop ? 24 : 20,
+                width: isDesktop ? 24 : 20,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
               )
-            : const Icon(Icons.send),
+            : Icon(Icons.send, size: isDesktop ? 24 : 20),
       ),
     );
   }

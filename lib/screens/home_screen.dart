@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -59,12 +60,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final int currentIndex = ref.watch(_navIndexProvider);
+    final bool isDesktop = _isDesktopPlatform();
+
     final Widget body = switch (currentIndex) {
       0 => _HomeTab(onSignOut: () => _signOut(context), onRefresh: _refreshAll),
       1 => const ChatScreen(),
       2 => const _PlaceholderTab(title: 'My Progress'),
       _ => const ProfileScreen(),
     };
+
+    if (isDesktop) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: kDarkGradient,
+            ),
+          ),
+          child: Row(
+            children: [
+              _DesktopSideNav(
+                currentIndex: currentIndex,
+                onTap: (i) => ref.read(_navIndexProvider.notifier).state = i,
+                onSignOut: () => _signOut(context),
+              ),
+              Expanded(
+                child: SafeArea(child: body),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       extendBody: true,
@@ -73,12 +102,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: kDarkGradient, // Your gradient colors
+            colors: kDarkGradient,
           ),
         ),
         child: SafeArea(child: body),
       ),
-      backgroundColor: Colors.transparent, // Keep this transparent so gradient shows
+      backgroundColor: Colors.transparent,
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
         child: _GlassNavBar(
@@ -87,7 +116,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ),
       ),
     );
+  }
 
+  bool _isDesktopPlatform() {
+    if (kIsWeb) return true;
+    return Theme.of(context).platform == TargetPlatform.windows ||
+           Theme.of(context).platform == TargetPlatform.linux ||
+           Theme.of(context).platform == TargetPlatform.macOS;
   }
 }
 
@@ -120,20 +155,34 @@ class _HomeTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final bool isDesktop = kIsWeb ||
+      MediaQuery.of(context).size.width > 800;
+
+    final double maxWidth = isDesktop ? 1200 : double.infinity;
+    final EdgeInsets padding = isDesktop
+      ? const EdgeInsets.symmetric(horizontal: 48, vertical: 32)
+      : const EdgeInsets.symmetric(horizontal: 16, vertical: 20);
+
     return RefreshIndicator.adaptive(
       color: kPrimaryColor,
       onRefresh: onRefresh,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // <CHANGE> Keep only the header, remove all content sections
-            _PersonalizedHeader(onSignOut: onSignOut),
-            const SizedBox(height: 20),
-            const _AiTopicExplorer(),
-          ],
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxWidth),
+            child: Padding(
+              padding: padding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (!isDesktop) _PersonalizedHeader(onSignOut: onSignOut),
+                  if (!isDesktop) const SizedBox(height: 20),
+                  const _AiTopicExplorer(),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -1210,6 +1259,237 @@ class _Skeleton extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white12,
         borderRadius: BorderRadius.circular(16),
+      ),
+    );
+  }
+}
+
+class _DesktopSideNav extends ConsumerWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+  final VoidCallback onSignOut;
+  const _DesktopSideNav({
+    required this.currentIndex,
+    required this.onTap,
+    required this.onSignOut,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profileAsync = ref.watch(userProfileProvider);
+
+    return Container(
+      width: 280,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.2),
+        border: Border(
+          right: BorderSide(color: Colors.white.withOpacity(0.1)),
+        ),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 32),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [kPrimaryColor, kAccentColor],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.school, color: Colors.white, size: 28),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'AI Tutor',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          profileAsync.when(
+            data: (profile) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.15)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [kPrimaryColor, kAccentColor],
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              profile.name[0].toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                profile.name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                DateFormat('MMM d, y').format(DateTime.now()),
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.6),
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            loading: () => const SizedBox(height: 80),
+            error: (_, __) => const SizedBox(height: 80),
+          ),
+          const SizedBox(height: 16),
+          _NavItem(
+            icon: Icons.home_rounded,
+            label: 'Home',
+            isSelected: currentIndex == 0,
+            onTap: () => onTap(0),
+          ),
+          _NavItem(
+            icon: Icons.chat_bubble_rounded,
+            label: 'Chat',
+            isSelected: currentIndex == 1,
+            onTap: () => onTap(1),
+          ),
+          _NavItem(
+            icon: Icons.insights_rounded,
+            label: 'Progress',
+            isSelected: currentIndex == 2,
+            onTap: () => onTap(2),
+          ),
+          _NavItem(
+            icon: Icons.person_rounded,
+            label: 'Profile',
+            isSelected: currentIndex == 3,
+            onTap: () => onTap(3),
+          ),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: ElevatedButton.icon(
+              onPressed: onSignOut,
+              icon: const Icon(Icons.logout, size: 18),
+              label: const Text('Sign Out'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white.withOpacity(0.1),
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isSelected ? kPrimaryColor.withOpacity(0.2) : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? kPrimaryColor.withOpacity(0.5) : Colors.transparent,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  color: isSelected ? Colors.white : Colors.white60,
+                  size: 24,
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.white60,
+                    fontSize: 16,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

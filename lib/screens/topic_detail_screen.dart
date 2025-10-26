@@ -167,6 +167,8 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = kIsWeb || MediaQuery.of(context).size.width > 800;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -179,9 +181,11 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              _buildAppBar(),
+              _buildAppBar(isDesktop),
               Expanded(
-                child: _buildContent(),
+                child: isDesktop
+                  ? _buildDesktopContent()
+                  : _buildContent(),
               ),
             ],
           ),
@@ -190,45 +194,68 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(bool isDesktop) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(isDesktop ? 32.0 : 16.0),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+              size: isDesktop ? 28 : 24,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(isDesktop ? 16 : 12),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [kPrimaryColor, kAccentColor],
               ),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(widget.topic.icon, color: Colors.white, size: 24),
+            child: Icon(
+              widget.topic.icon,
+              color: Colors.white,
+              size: isDesktop ? 32 : 24,
+            ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   widget.topic.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: isDesktop ? 24 : 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (_isFromCache && !_isLoading)
-                  Row(
-                    children: [
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.category,
+                      size: isDesktop ? 16 : 14,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      widget.topic.category,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: isDesktop ? 14 : 12,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    if (_isFromCache && !_isLoading) ..[
                       Icon(
                         Icons.offline_bolt,
-                        size: 14,
+                        size: isDesktop ? 16 : 14,
                         color: Colors.white.withOpacity(0.7),
                       ),
                       const SizedBox(width: 4),
@@ -236,11 +263,12 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                         'Loaded from cache',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.7),
-                          fontSize: 12,
+                          fontSize: isDesktop ? 14 : 12,
                         ),
                       ),
                     ],
-                  ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -337,6 +365,59 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
         'No tutorial available',
         style: TextStyle(color: Colors.white70, fontSize: 16),
       ),
+    );
+  }
+
+  Widget _buildDesktopContent() {
+    if (_error != null) {
+      return _buildErrorState();
+    }
+
+    if (_isLoading) {
+      return _buildLoadingState();
+    }
+
+    if (_tutorial == null) {
+      return _buildEmptyState();
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 2,
+          child: Column(
+            children: [
+              if (_tutorial!.steps.length > 1) _buildStepIndicator(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (_currentStepIndex == 0) _buildSummaryCard(),
+                      if (_currentStepIndex == 0) const SizedBox(height: 24),
+                      _buildCurrentStep(),
+                    ],
+                  ),
+                ),
+              ),
+              if (_tutorial!.steps.length > 1) _buildNavigationButtons(),
+            ],
+          ),
+        ),
+        if (_showChat)
+          Container(
+            width: 450,
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.2),
+              border: Border(
+                left: BorderSide(color: Colors.white.withOpacity(0.1)),
+              ),
+            ),
+            child: _buildDesktopChatSection(),
+          ),
+      ],
     );
   }
 
@@ -560,6 +641,182 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDesktopChatSection() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Colors.white.withOpacity(0.1)),
+            ),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.chat_bubble, color: kPrimaryColor, size: 24),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Ask Questions',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () {
+                  setState(() {
+                    _showChat = false;
+                    _chatMessages.clear();
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: _chatMessages.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.question_answer,
+                          size: 64,
+                          color: Colors.white.withOpacity(0.3),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Ask follow-up questions',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Get clarification on this step',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.5),
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(24),
+                  itemCount: _chatMessages.length,
+                  itemBuilder: (context, index) {
+                    final message = _chatMessages[index];
+                    final isUser = message.role == 'user';
+                    return Align(
+                      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        constraints: const BoxConstraints(maxWidth: 350),
+                        decoration: BoxDecoration(
+                          color: isUser
+                              ? kPrimaryColor.withOpacity(0.2)
+                              : Colors.white.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isUser
+                                ? kPrimaryColor.withOpacity(0.3)
+                                : Colors.white.withOpacity(0.15),
+                          ),
+                        ),
+                        child: Text(
+                          message.content,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.2),
+            border: Border(
+              top: BorderSide(color: Colors.white.withOpacity(0.1)),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _chatController,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  maxLines: 3,
+                  minLines: 1,
+                  decoration: InputDecoration(
+                    hintText: 'Ask a question...',
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: kPrimaryColor),
+                    ),
+                    contentPadding: const EdgeInsets.all(16),
+                  ),
+                  enabled: !_isSendingMessage,
+                  onSubmitted: (_) => _sendChatMessage(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: 48,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: _isSendingMessage ? null : _sendChatMessage,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    backgroundColor: kPrimaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isSendingMessage
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.send, color: Colors.white, size: 20),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
