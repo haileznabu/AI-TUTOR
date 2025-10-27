@@ -8,6 +8,7 @@ import '../main.dart';
 import '../providers/learning_providers.dart';
 import 'chat_screen.dart';
 import 'profile_screen.dart';
+import 'progress_screen.dart';
 import '../models/topic_model.dart';
 import 'topic_detail_screen.dart';
 import '../services/visited_topics_service.dart';
@@ -65,7 +66,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final Widget body = switch (currentIndex) {
       0 => _HomeTab(onSignOut: () => _signOut(context), onRefresh: _refreshAll),
       1 => const ChatScreen(),
-      2 => const _PlaceholderTab(title: 'My Progress'),
+      2 => const ProgressScreen(),
       _ => const ProfileScreen(),
     };
 
@@ -125,24 +126,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return Theme.of(context).platform == TargetPlatform.windows ||
            Theme.of(context).platform == TargetPlatform.linux ||
            Theme.of(context).platform == TargetPlatform.macOS;
-  }
-}
-
-class _PlaceholderTab extends StatelessWidget {
-  final String title;
-  const _PlaceholderTab({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        '$title (Coming soon)',
-        style: Theme.of(context)
-            .textTheme
-            .headlineSmall
-            ?.copyWith(color: Colors.white70),
-      ),
-    );
   }
 }
 
