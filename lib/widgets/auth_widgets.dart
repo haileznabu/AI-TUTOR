@@ -51,11 +51,13 @@ class GlassTextField extends StatelessWidget {
 class GradientButton extends StatefulWidget {
   final String label;
   final VoidCallback onPressed;
+  final bool isLoading;
 
   const GradientButton({
     super.key,
     required this.label,
     required this.onPressed,
+    this.isLoading = false,
   });
 
   @override
@@ -83,12 +85,12 @@ class _GradientButtonState extends State<GradientButton>
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     return GestureDetector(
-      onTapDown: (_) => _controller.forward(),
-      onTapUp: (_) {
+      onTapDown: widget.isLoading ? null : (_) => _controller.forward(),
+      onTapUp: widget.isLoading ? null : (_) {
         _controller.reverse();
         widget.onPressed();
       },
-      onTapCancel: () => _controller.reverse(),
+      onTapCancel: widget.isLoading ? null : () => _controller.reverse(),
       child: ScaleTransition(
         scale: scale,
         child: Container(
@@ -96,8 +98,10 @@ class _GradientButtonState extends State<GradientButton>
           width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            gradient: const LinearGradient(
-              colors: [kPrimaryColor, kAccentColor],
+            gradient: LinearGradient(
+              colors: widget.isLoading
+                ? [kPrimaryColor.withOpacity(0.6), kAccentColor.withOpacity(0.6)]
+                : [kPrimaryColor, kAccentColor],
             ),
             boxShadow: [
               BoxShadow(
@@ -108,14 +112,23 @@ class _GradientButtonState extends State<GradientButton>
             ],
           ),
           child: Center(
-            child: Text(
-              widget.label,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.white,
-              ),
-            ),
+            child: widget.isLoading
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 3,
+                  ),
+                )
+              : Text(
+                  widget.label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
           ),
         ),
       ),

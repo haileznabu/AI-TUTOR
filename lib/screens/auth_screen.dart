@@ -151,26 +151,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                 child: SafeArea(
                   child: Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton.icon(
-                              onPressed: _handleSkip,
-                              icon: const Icon(Icons.arrow_forward, size: 18),
-                              label: const Text('Skip for now'),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white70,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                       Expanded(
                         child: Center(
                           child: SingleChildScrollView(
@@ -211,6 +191,22 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                         child: isSignIn
                                             ? const SignInForm(key: ValueKey('SignIn'))
                                             : const SignUpForm(key: ValueKey('SignUp')),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: OutlinedButton(
+                                          onPressed: _handleSkip,
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: Colors.white70,
+                                            side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                                            padding: const EdgeInsets.symmetric(vertical: 16),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                          child: const Text('Continue as Guest'),
+                                        ),
                                       ),
                                       const SizedBox(height: 24),
                                       Row(
@@ -271,24 +267,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             child: SafeArea(
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: _handleSkip,
-                          child: const Text(
-                            'Skip',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                   Expanded(
                     child: Center(
                       child: SingleChildScrollView(
@@ -325,6 +303,22 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                   child: isSignIn
                                       ? const SignInForm(key: ValueKey('SignIn'))
                                       : const SignUpForm(key: ValueKey('SignUp')),
+                                ),
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton(
+                                    onPressed: _handleSkip,
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.white70,
+                                      side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                                      padding: const EdgeInsets.symmetric(vertical: 16),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: const Text('Continue as Guest'),
+                                  ),
                                 ),
                                 const SizedBox(height: 24),
                                 Row(
@@ -473,9 +467,8 @@ class _SignInFormState extends State<SignInForm> {
         const SizedBox(height: 28),
         GradientButton(
           label: 'Sign In',
-          onPressed: _isLoading
-              ? () {}
-              : () async {
+          isLoading: _isLoading,
+          onPressed: () async {
             final String email = _emailController.text.trim();
             final String password = _passwordController.text.trim();
             if (email.isEmpty || password.isEmpty) {
@@ -591,9 +584,8 @@ class _SignUpFormState extends State<SignUpForm> {
         const SizedBox(height: 32),
         GradientButton(
           label: 'Create Account',
-          onPressed: _isLoading
-              ? () {}
-              : () async {
+          isLoading: _isLoading,
+          onPressed: () async {
             final String name = _nameController.text.trim();
             final String email = _emailController.text.trim();
             final String password = _passwordController.text.trim();
