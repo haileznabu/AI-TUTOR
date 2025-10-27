@@ -45,6 +45,7 @@ dependencies:
   fl_chart: ^0.68.0
   http: ^1.2.0
   flutter_dotenv: ^5.2.1
+  google_mobile_ads: ^5.1.0
 
 dev_dependencies:
   flutter_test:

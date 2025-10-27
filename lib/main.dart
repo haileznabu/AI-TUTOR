@@ -12,6 +12,7 @@ import 'firebase_options.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/auth_screen.dart';
+import 'services/ad_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +32,8 @@ Future<void> main() async {
     debugPrint('Firebase initialization error: $e');
     rethrow;
   }
+
+  await AdService.initialize();
 
   runApp(ProviderScope(child: const MyApp()));
 }

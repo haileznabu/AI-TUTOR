@@ -13,6 +13,7 @@ import '../models/topic_model.dart';
 import 'topic_detail_screen.dart';
 import '../services/visited_topics_service.dart';
 import '../services/firestore_service.dart';
+import '../widgets/banner_ad_widget.dart';
 
 // 🏠 HOME
 class HomeScreen extends ConsumerStatefulWidget {
@@ -162,6 +163,8 @@ class _HomeTab extends ConsumerWidget {
                 children: [
                   if (!isDesktop) _PersonalizedHeader(onSignOut: onSignOut),
                   if (!isDesktop) const SizedBox(height: 20),
+                  const BannerAdWidget(),
+                  if (!isDesktop) const SizedBox(height: 16),
                   const _AiTopicExplorer(),
                 ],
               ),
