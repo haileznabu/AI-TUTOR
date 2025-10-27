@@ -234,39 +234,50 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                     fontSize: isDesktop ? 24 : 18,
                     fontWeight: FontWeight.bold,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                Row(
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 4,
                   children: [
-                    Icon(
-                      Icons.category,
-                      size: isDesktop ? 16 : 14,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      widget.topic.category,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
-                        fontSize: isDesktop ? 14 : 12,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    if (_isFromCache && !_isLoading) ...[
-                      Icon(
-                        Icons.offline_bolt,
-                        size: isDesktop ? 16 : 14,
-                        color: Colors.white.withOpacity(0.7),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Loaded from cache',
-                        style: TextStyle(
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.category,
+                          size: isDesktop ? 16 : 14,
                           color: Colors.white.withOpacity(0.7),
-                          fontSize: isDesktop ? 14 : 12,
                         ),
+                        const SizedBox(width: 6),
+                        Text(
+                          widget.topic.category,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: isDesktop ? 14 : 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_isFromCache && !_isLoading)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.offline_bolt,
+                            size: isDesktop ? 16 : 14,
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Cached',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.7),
+                              fontSize: isDesktop ? 14 : 12,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
                   ],
                 ),
               ],

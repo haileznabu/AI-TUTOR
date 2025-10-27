@@ -435,13 +435,13 @@ class _WeeklyChart extends StatelessWidget {
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return SizedBox(
-      height: 180,
+      height: 200,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: List.generate(7, (index) {
           final lessons = activity.lessonsPerDay[index];
-          final height = maxLessons > 0 ? (lessons / maxLessons) * 140 : 0.0;
+          final height = maxLessons > 0 ? (lessons / maxLessons) * 120 : 0.0;
           final date = now.subtract(Duration(days: 6 - index));
           final isToday = index == 6;
 
@@ -451,49 +451,61 @@ class _WeeklyChart extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  if (lessons > 0)
-                    Text(
-                      '$lessons',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  SizedBox(
+                    height: 20,
+                    child: lessons > 0
+                        ? Text(
+                            '$lessons',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    height: 120,
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: lessons > 0
+                          ? Container(
+                              height: height < 20 ? 20.0 : height,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: isToday
+                                      ? [kPrimaryColor, kAccentColor]
+                                      : [
+                                          kPrimaryColor.withOpacity(0.6),
+                                          kAccentColor.withOpacity(0.6),
+                                        ],
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            )
+                          : Container(
+                              height: 8,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
                     ),
-                  if (lessons > 0) const SizedBox(height: 4),
-                  if (lessons > 0)
-                    Container(
-                      height: height < 20 ? 20.0 : height,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: isToday
-                              ? [kPrimaryColor, kAccentColor]
-                              : [
-                                  kPrimaryColor.withOpacity(0.6),
-                                  kAccentColor.withOpacity(0.6),
-                                ],
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  if (lessons == 0)
-                    Container(
-                      height: 8,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text(
-                    weekdays[index],
-                    style: TextStyle(
-                      color: isToday ? Colors.white : Colors.white.withOpacity(0.6),
-                      fontSize: 11,
-                      fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                  SizedBox(
+                    height: 20,
+                    child: Text(
+                      weekdays[index],
+                      style: TextStyle(
+                        color: isToday ? Colors.white : Colors.white.withOpacity(0.6),
+                        fontSize: 11,
+                        fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                      ),
                     ),
                   ),
                 ],
