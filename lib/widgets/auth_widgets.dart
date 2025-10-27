@@ -22,20 +22,22 @@ class GlassTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white24, width: 1.2),
+        border: Border.all(color: isDark ? Colors.white24 : Colors.grey.shade300, width: 1.2),
+        color: isDark ? null : Colors.grey.shade50,
       ),
       child: TextField(
         controller: controller,
         obscureText: obscureText,
         keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: isDark ? Colors.white : Colors.black87),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(color: Colors.white54),
-          prefixIcon: Icon(icon, color: Colors.white60),
+          hintStyle: TextStyle(color: isDark ? Colors.white54 : Colors.grey),
+          prefixIcon: Icon(icon, color: isDark ? Colors.white60 : Colors.grey),
           suffixIcon: suffixIcon,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
@@ -143,17 +145,18 @@ class DividerWithText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
-        const Expanded(child: Divider(color: Colors.white24)),
+        Expanded(child: Divider(color: isDark ? Colors.white24 : Colors.grey.shade300)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text(
             label,
-            style: const TextStyle(color: Colors.white54, fontSize: 12),
+            style: TextStyle(color: isDark ? Colors.white54 : Colors.grey, fontSize: 12),
           ),
         ),
-        const Expanded(child: Divider(color: Colors.white24)),
+        Expanded(child: Divider(color: isDark ? Colors.white24 : Colors.grey.shade300)),
       ],
     );
   }

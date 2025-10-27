@@ -73,6 +73,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     final size = MediaQuery.of(context).size;
     final isDesktop = size.width >= 900;
     final isTablet = size.width >= 600 && size.width < 900;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (isDesktop || isTablet) {
       return Scaffold(
@@ -82,12 +83,13 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             Expanded(
               flex: isDesktop ? 5 : 4,
               child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
+                decoration: BoxDecoration(
+                  gradient: isDark ? const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: kDarkGradient,
-                  ),
+                  ) : null,
+                  color: isDark ? null : kPrimaryColor,
                 ),
                 child: SafeArea(
                   child: Padding(
@@ -147,7 +149,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             Expanded(
               flex: isDesktop ? 4 : 5,
               child: Container(
-                color: const Color(0xFF0A0015),
+                color: isDark ? const Color(0xFF0A0015) : Colors.white,
                 child: SafeArea(
                   child: Column(
                     children: [
@@ -172,7 +174,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                         style: TextStyle(
                                           fontSize: isDesktop ? 36 : 28,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                          color: isDark ? Colors.white : Colors.black87,
                                         ),
                                       ),
                                       const SizedBox(height: 8),
@@ -181,7 +183,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                             ? 'Sign in to your account to continue your learning journey'
                                             : 'Join us and start your personalized learning experience',
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.6),
+                                          color: isDark ? Colors.white.withOpacity(0.6) : Colors.grey,
                                           fontSize: isDesktop ? 16 : 14,
                                         ),
                                       ),
@@ -198,8 +200,8 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                         child: OutlinedButton(
                                           onPressed: _handleSkip,
                                           style: OutlinedButton.styleFrom(
-                                            foregroundColor: Colors.white70,
-                                            side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                                            foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                                            side: BorderSide(color: isDark ? Colors.white.withOpacity(0.3) : Colors.grey.shade300),
                                             padding: const EdgeInsets.symmetric(vertical: 16),
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(12),
@@ -217,7 +219,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                                 ? "Don't have an account? "
                                                 : "Already have an account? ",
                                             style: TextStyle(
-                                              color: Colors.white.withOpacity(0.6),
+                                              color: isDark ? Colors.white.withOpacity(0.6) : Colors.grey,
                                               fontSize: 15,
                                             ),
                                           ),
@@ -252,17 +254,18 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       );
     }
 
-    // Mobile layout (unchanged - perfect as is)
+    // Mobile layout
     return Scaffold(
       body: Stack(
         children: [
           Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
+            decoration: BoxDecoration(
+              gradient: isDark ? const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: kDarkGradient,
-              ),
+              ) : null,
+              color: isDark ? null : Colors.white,
             ),
             child: SafeArea(
               child: Column(
@@ -285,7 +288,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                   isSignIn ? 'Welcome Back' : 'Create Account',
                                   style: textTheme.headlineMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: isDark ? Colors.white : Colors.black87,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -294,7 +297,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                       ? 'Sign in to your account to continue'
                                       : 'Join us and start your journey',
                                   style: textTheme.bodyMedium?.copyWith(
-                                    color: Colors.white70,
+                                    color: isDark ? Colors.white70 : Colors.grey,
                                   ),
                                 ),
                                 const SizedBox(height: 40),
@@ -310,8 +313,8 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                   child: OutlinedButton(
                                     onPressed: _handleSkip,
                                     style: OutlinedButton.styleFrom(
-                                      foregroundColor: Colors.white70,
-                                      side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                                      foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                                      side: BorderSide(color: isDark ? Colors.white.withOpacity(0.3) : Colors.grey.shade300),
                                       padding: const EdgeInsets.symmetric(vertical: 16),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
@@ -329,7 +332,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                           ? "Don't have an account? "
                                           : "Already have an account? ",
                                       style: textTheme.bodyMedium?.copyWith(
-                                        color: Colors.white70,
+                                        color: isDark ? Colors.white70 : Colors.grey,
                                       ),
                                     ),
                                     GestureDetector(
@@ -430,6 +433,7 @@ class _SignInFormState extends State<SignInForm> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
         GlassTextField(
@@ -449,18 +453,21 @@ class _SignInFormState extends State<SignInForm> {
                 setState(() => _obscurePassword = !_obscurePassword),
             icon: Icon(
               _obscurePassword ? Icons.visibility_off : Icons.visibility,
-              color: Colors.white54,
+              color: isDark ? Colors.white54 : Colors.grey,
             ),
           ),
         ),
         const SizedBox(height: 12),
         Align(
           alignment: Alignment.centerRight,
-          child: Text(
-            'Forgot Password?',
-            style: const TextStyle(
-              color: kPrimaryColor,
-              fontWeight: FontWeight.w500,
+          child: GestureDetector(
+            onTap: () {},
+            child: const Text(
+              'Forgot Password?',
+              style: TextStyle(
+                color: kPrimaryColor,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ),
@@ -536,6 +543,7 @@ class _SignUpFormState extends State<SignUpForm> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
         GlassTextField(
@@ -561,7 +569,7 @@ class _SignUpFormState extends State<SignUpForm> {
                 setState(() => _obscurePassword = !_obscurePassword),
             icon: Icon(
               _obscurePassword ? Icons.visibility_off : Icons.visibility,
-              color: Colors.white54,
+              color: isDark ? Colors.white54 : Colors.grey,
             ),
           ),
         ),
@@ -576,7 +584,7 @@ class _SignUpFormState extends State<SignUpForm> {
             Expanded(
               child: Text(
                 'I agree to the Terms of Service and Privacy Policy',
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                style: TextStyle(color: isDark ? Colors.white70 : Colors.grey, fontSize: 13),
               ),
             ),
           ],
