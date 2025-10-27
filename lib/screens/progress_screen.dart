@@ -174,7 +174,7 @@ class ProgressScreen extends ConsumerWidget {
                 child: _MetricCard(
                   icon: Icons.psychology,
                   label: 'Mastery',
-                  value: '${(metrics.mastery * 100).toInt()}%',
+                  value: '${(metrics.mastery.clamp(0.0, 1.0) * 100).toInt()}%',
                   color: kPrimaryColor,
                 ),
               ),
@@ -191,18 +191,18 @@ class ProgressScreen extends ConsumerWidget {
           ),
         ],
       ),
-      loading: () => Column(
+      loading: () => const Column(
         children: [
           Row(
-            children: const [
+            children: [
               Expanded(child: _SkeletonCard(height: 100)),
               SizedBox(width: 12),
               Expanded(child: _SkeletonCard(height: 100)),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(
-            children: const [
+            children: [
               Expanded(child: _SkeletonCard(height: 100)),
               SizedBox(width: 12),
               Expanded(child: _SkeletonCard(height: 100)),
@@ -246,8 +246,8 @@ class ProgressScreen extends ConsumerWidget {
   }
 
   Widget _buildActivityStats(WeeklyActivity activity) {
-    final totalLessons = activity.lessonsPerDay.reduce((a, b) => a + b);
-    final avgTime = activity.avgTimePerLessonMinutes.reduce((a, b) => a + b) / 7;
+    final totalLessons = activity.lessonsPerDay.fold<int>(0, (sum, val) => sum + val);
+    final avgTime = activity.avgTimePerLessonMinutes.fold<double>(0.0, (sum, val) => sum + val) / 7.0;
 
     return Row(
       children: [
@@ -430,7 +430,7 @@ class _WeeklyChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxLessons = activity.lessonsPerDay.reduce(math.max).toDouble();
+    final maxLessons = activity.lessonsPerDay.fold<int>(0, (max, val) => val > max ? val : max).toDouble();
     final now = DateTime.now();
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
