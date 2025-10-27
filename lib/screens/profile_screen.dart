@@ -5,6 +5,7 @@ import 'dart:ui';
 import '../main.dart';
 import '../services/firestore_service.dart';
 import '../services/visited_topics_service.dart';
+import '../providers/theme_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -121,6 +122,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildHeader(User? user) {
+    final textColor = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black87;
+
     return GlassCard(
       padding: const EdgeInsets.all(20),
       child: Row(
@@ -157,8 +162,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 Text(
                   user?.displayName ?? user?.email?.split('@')[0] ?? 'User',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: textColor,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -167,7 +172,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Text(
                   user?.email ?? '',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: textColor.withOpacity(0.7),
                     fontSize: 14,
                   ),
                 ),
@@ -180,6 +185,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildStatsSection() {
+    final textColor = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black87;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -190,7 +199,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Text(
               'Your Progress',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
+                    color: textColor,
                     fontWeight: FontWeight.bold,
                   ),
             ),
@@ -258,6 +267,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildStatCard(
       String label, String value, IconData icon, Color color) {
+    final textColor = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black87;
+
     return GlassCard(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -278,8 +291,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: textColor,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -288,7 +301,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: textColor.withOpacity(0.7),
               fontSize: 12,
             ),
           ),
@@ -298,17 +311,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildSettingsSection() {
+    final isDark = ref.watch(themeProvider) == ThemeMode.dark;
+    final textColor = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black87;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(Icons.settings, color: kPrimaryColor, size: 20),
+            Icon(Icons.settings, color: kPrimaryColor, size: 20),
             const SizedBox(width: 8),
             Text(
               'Settings',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
+                    color: textColor,
                     fontWeight: FontWeight.bold,
                   ),
             ),
@@ -320,27 +338,55 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: Column(
             children: [
               ListTile(
-                leading: const Icon(Icons.refresh, color: Colors.white),
-                title: const Text(
-                  'Refresh Stats',
-                  style: TextStyle(color: Colors.white),
+                leading: Icon(
+                  isDark ? Icons.light_mode : Icons.dark_mode,
+                  color: textColor,
                 ),
-                trailing: const Icon(
+                title: Text(
+                  'Theme',
+                  style: TextStyle(color: textColor),
+                ),
+                trailing: Switch(
+                  value: isDark,
+                  onChanged: (_) {
+                    ref.read(themeProvider.notifier).toggleTheme();
+                  },
+                  activeColor: kPrimaryColor,
+                ),
+              ),
+              Divider(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white12
+                    : Colors.black12,
+                height: 1,
+              ),
+              ListTile(
+                leading: Icon(Icons.refresh, color: textColor),
+                title: Text(
+                  'Refresh Stats',
+                  style: TextStyle(color: textColor),
+                ),
+                trailing: Icon(
                   Icons.chevron_right,
-                  color: Colors.white54,
+                  color: textColor.withOpacity(0.5),
                 ),
                 onTap: _loadUserStats,
               ),
-              const Divider(color: Colors.white12, height: 1),
+              Divider(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white12
+                    : Colors.black12,
+                height: 1,
+              ),
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text(
+                title: Text(
                   'Clear Local Data',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: textColor),
                 ),
-                trailing: const Icon(
+                trailing: Icon(
                   Icons.chevron_right,
-                  color: Colors.white54,
+                  color: textColor.withOpacity(0.5),
                 ),
                 onTap: _clearLocalData,
               ),
@@ -365,6 +411,8 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: BackdropFilter(
@@ -372,9 +420,16 @@ class GlassCard extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: isDark
+                ? Colors.white.withOpacity(0.08)
+                : Colors.black.withOpacity(0.03),
             borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.15)
+                  : Colors.black.withOpacity(0.1),
+              width: 1,
+            ),
           ),
           child: child,
         ),
