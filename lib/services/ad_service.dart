@@ -6,8 +6,8 @@ class AdService {
   factory AdService() => _instance;
   AdService._internal();
 
-  static const String _androidBannerAdUnitId = 'ca-app-pub-6812069693518364/6727487654';
-  static const String _androidInterstitialAdUnitId = 'ca-app-pub-6812069693518364/1387531067';
+  static const String _androidBannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
+  static const String _androidInterstitialAdUnitId = 'ca-app-pub-3940256099942544/1033173712';
 
   InterstitialAd? _interstitialAd;
   bool _isInterstitialAdReady = false;
