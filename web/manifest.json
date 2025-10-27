@@ -1,11 +1,11 @@
 {
-    "name": "ai_tutor",
-    "short_name": "ai_tutor",
+    "name": "Learn4All",
+    "short_name": "Learn4All",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Learn4All - AI-powered learning platform",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
