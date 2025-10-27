@@ -460,23 +460,33 @@ class _WeeklyChart extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  const SizedBox(height: 4),
-                  Container(
-                    height: height.clamp(20.0, 140.0),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: isToday
-                            ? [kPrimaryColor, kAccentColor]
-                            : [
-                                kPrimaryColor.withOpacity(0.6),
-                                kAccentColor.withOpacity(0.6),
-                              ],
+                  if (lessons > 0) const SizedBox(height: 4),
+                  if (lessons > 0)
+                    Container(
+                      height: height < 20 ? 20.0 : height,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: isToday
+                              ? [kPrimaryColor, kAccentColor]
+                              : [
+                                  kPrimaryColor.withOpacity(0.6),
+                                  kAccentColor.withOpacity(0.6),
+                                ],
+                        ),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
+                  if (lessons == 0)
+                    Container(
+                      height: 8,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
                   const SizedBox(height: 8),
                   Text(
                     weekdays[index],

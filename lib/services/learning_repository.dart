@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/data_models.dart';
 import '../models/topic_model.dart';
@@ -12,29 +13,57 @@ class LearningRepository {
   final FirebaseAuthService _authService = FirebaseAuthService();
   final AIService _aiService = AIService();
   Future<UserProfile> fetchUserProfile() async {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
     final String fallbackName =
         FirebaseAuth.instance.currentUser?.displayName ?? 'Learner';
-    return Future<UserProfile>.delayed(
-      const Duration(milliseconds: 400),
-      () => UserProfile(
-        name: fallbackName,
-        avatarUrl:
-            'https://api.dicebear.com/8.x/identicon/svg?seed=${Uri.encodeComponent(fallbackName)}',
-        streakDays: 7,
-        hasActiveLesson: true,
-      ),
+
+    final streakDays = await _calculateStreak(userId);
+    final hasActiveLesson = await _hasActiveLesson(userId);
+
+    return UserProfile(
+      name: fallbackName,
+      avatarUrl:
+          'https://api.dicebear.com/8.x/identicon/svg?seed=${Uri.encodeComponent(fallbackName)}',
+      streakDays: streakDays,
+      hasActiveLesson: hasActiveLesson,
     );
   }
 
   Future<AdaptiveMetrics> fetchAdaptiveMetrics() async {
-    return Future<AdaptiveMetrics>.delayed(
-      const Duration(milliseconds: 380),
-      () => const AdaptiveMetrics(
-        level: 'Intermediate',
-        mastery: 0.76,
-        pace: 'Steady',
-        weeklyTime: Duration(hours: 3, minutes: 20),
-      ),
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    final progress = await _firestoreService.getUserProgress(userId);
+    final quizResultsCount = await _getQuizResultsCount(userId);
+    final weeklyTime = await _calculateWeeklyTime(userId);
+
+    final totalProgress = progress.values.fold<int>(0, (sum, val) => sum + val);
+    final completedTopics = progress.values.where((p) => p >= 100).length;
+    final avgProgress = progress.isNotEmpty ? totalProgress / progress.length : 0;
+
+    final mastery = quizResultsCount > 0 ? (avgProgress / 100).clamp(0.0, 1.0) : 0.0;
+    final level = completedTopics >= 10
+        ? 'Advanced'
+        : completedTopics >= 3
+            ? 'Intermediate'
+            : 'Beginner';
+    final pace = weeklyTime.inMinutes >= 180
+        ? 'Fast'
+        : weeklyTime.inMinutes >= 60
+            ? 'Steady'
+            : 'Slow';
+
+    return AdaptiveMetrics(
+      level: level,
+      mastery: mastery,
+      pace: pace,
+      weeklyTime: weeklyTime,
     );
   }
 
@@ -84,44 +113,92 @@ class LearningRepository {
   }
 
   Future<WeeklyActivity> fetchWeeklyActivity() async {
-    return Future<WeeklyActivity>.delayed(
-      const Duration(milliseconds: 400),
-      () => const WeeklyActivity(
-        lessonsPerDay: [3, 5, 2, 6, 4, 7, 5],
-        avgTimePerLessonMinutes: [18, 22, 20, 25, 19, 23, 21],
-        paceTrend: 'accelerating',
-        fasterVsLastWeek: 0.15,
-      ),
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    final now = DateTime.now();
+    final lessonsPerDay = <int>[];
+    final avgTimePerLessonMinutes = <double>[];
+
+    for (int i = 6; i >= 0; i--) {
+      final date = now.subtract(Duration(days: i));
+      final lessons = await _getLessonsForDate(userId, date);
+      lessonsPerDay.add(lessons);
+      avgTimePerLessonMinutes.add(lessons > 0 ? 20.0 : 0.0);
+    }
+
+    final recentLessons = lessonsPerDay.sublist(4, 7).fold<int>(0, (sum, val) => sum + val);
+    final earlierLessons = lessonsPerDay.sublist(0, 3).fold<int>(0, (sum, val) => sum + val);
+    final paceTrend = recentLessons > earlierLessons
+        ? 'Accelerating'
+        : recentLessons == earlierLessons
+            ? 'Steady'
+            : 'Slowing';
+
+    return WeeklyActivity(
+      lessonsPerDay: lessonsPerDay,
+      avgTimePerLessonMinutes: avgTimePerLessonMinutes,
+      paceTrend: paceTrend,
+      fasterVsLastWeek: 0.0,
     );
   }
 
   Future<List<Achievement>> fetchAchievements() async {
-    return Future<List<Achievement>>.delayed(
-      const Duration(milliseconds: 380),
-      () => const [
-        Achievement(
-          id: 'a1',
-          title: 'First Steps',
-          description: 'Complete your first lesson',
-          earned: true,
-          icon: Icons.star,
-        ),
-        Achievement(
-          id: 'a2',
-          title: '7-Day Streak',
-          description: 'Learn for 7 consecutive days',
-          earned: true,
-          icon: Icons.local_fire_department,
-        ),
-        Achievement(
-          id: 'a3',
-          title: 'Speed Demon',
-          description: 'Complete 5 lessons in one day',
-          earned: false,
-          icon: Icons.flash_on,
-        ),
-      ],
-    );
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    final progress = await _firestoreService.getUserProgress(userId);
+    final streak = await _calculateStreak(userId);
+    final completedTopics = progress.values.where((p) => p >= 100).length;
+
+    return [
+      Achievement(
+        id: 'a1',
+        title: 'First Steps',
+        description: 'Complete your first lesson',
+        earned: progress.isNotEmpty,
+        icon: Icons.star,
+      ),
+      Achievement(
+        id: 'a2',
+        title: '7-Day Streak',
+        description: 'Learn for 7 consecutive days',
+        earned: streak >= 7,
+        icon: Icons.local_fire_department,
+      ),
+      Achievement(
+        id: 'a3',
+        title: 'Speed Demon',
+        description: 'Complete 5 topics',
+        earned: completedTopics >= 5,
+        icon: Icons.flash_on,
+      ),
+      Achievement(
+        id: 'a4',
+        title: 'Knowledge Seeker',
+        description: 'Complete 10 topics',
+        earned: completedTopics >= 10,
+        icon: Icons.emoji_events,
+      ),
+      Achievement(
+        id: 'a5',
+        title: 'Dedicated Learner',
+        description: 'Achieve a 30-day streak',
+        earned: streak >= 30,
+        icon: Icons.workspace_premium,
+      ),
+      Achievement(
+        id: 'a6',
+        title: 'Master',
+        description: 'Complete 25 topics',
+        earned: completedTopics >= 25,
+        icon: Icons.school,
+      ),
+    ];
   }
 
   Future<DailyChallenge> fetchDailyChallenge() async {
@@ -307,5 +384,126 @@ class LearningRepository {
       score: score,
       totalQuestions: totalQuestions,
     );
+  }
+
+  Future<int> _calculateStreak(String userId) async {
+    try {
+      final now = DateTime.now();
+      int streak = 0;
+
+      for (int i = 0; i < 365; i++) {
+        final date = now.subtract(Duration(days: i));
+        final hasActivity = await _hasActivityOnDate(userId, date);
+
+        if (hasActivity) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+
+      return streak;
+    } catch (e) {
+      debugPrint('Error calculating streak: $e');
+      return 0;
+    }
+  }
+
+  Future<bool> _hasActivityOnDate(String userId, DateTime date) async {
+    try {
+      final startOfDay = DateTime(date.year, date.month, date.day);
+      final endOfDay = startOfDay.add(const Duration(days: 1));
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('progress')
+          .where('lastUpdated', isGreaterThanOrEqualTo: startOfDay)
+          .where('lastUpdated', isLessThan: endOfDay)
+          .limit(1)
+          .get();
+
+      return snapshot.docs.isNotEmpty;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> _hasActiveLesson(String userId) async {
+    try {
+      final progress = await _firestoreService.getUserProgress(userId);
+      return progress.values.any((p) => p > 0 && p < 100);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<int> _getQuizResultsCount(String userId) async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('quizResults')
+          .get();
+
+      return snapshot.docs.length;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  Future<Duration> _calculateWeeklyTime(String userId) async {
+    try {
+      final now = DateTime.now();
+      final weekAgo = now.subtract(const Duration(days: 7));
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('progress')
+          .where('lastUpdated', isGreaterThanOrEqualTo: weekAgo)
+          .get();
+
+      final totalMinutes = snapshot.docs.length * 20;
+      return Duration(minutes: totalMinutes);
+    } catch (e) {
+      return Duration.zero;
+    }
+  }
+
+  Future<int> _getLessonsForDate(String userId, DateTime date) async {
+    try {
+      final startOfDay = DateTime(date.year, date.month, date.day);
+      final endOfDay = startOfDay.add(const Duration(days: 1));
+
+      final progressSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('progress')
+          .where('lastUpdated', isGreaterThanOrEqualTo: startOfDay)
+          .where('lastUpdated', isLessThan: endOfDay)
+          .get();
+
+      final quizSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('quizResults')
+          .where('completedAt', isGreaterThanOrEqualTo: startOfDay)
+          .where('completedAt', isLessThan: endOfDay)
+          .get();
+
+      final uniqueTopics = <String>{};
+      for (var doc in progressSnapshot.docs) {
+        uniqueTopics.add(doc.data()['topicId'] as String);
+      }
+      for (var doc in quizSnapshot.docs) {
+        uniqueTopics.add(doc.data()['topicId'] as String);
+      }
+
+      return uniqueTopics.length;
+    } catch (e) {
+      debugPrint('Error getting lessons for date: $e');
+      return 0;
+    }
   }
 }
