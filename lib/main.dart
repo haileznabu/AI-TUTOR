@@ -43,6 +43,7 @@ Future<void> main() async {
 const kPrimaryColor = Color(0xFFB366FF);
 const kAccentColor = Color(0xFFFF66B2);
 const kDarkGradient = [Color(0xFF1A0033), Color(0xFF2D0052), Color(0xFF1A0033)];
+const kLightGradient = [Color(0xFFF5F5F5), Color(0xFFE0E0E0), Color(0xFFF5F5F5)];
 const onboarding_complete_v2 = 'onboarding_complete_v2';
 
 const kAnimationFast = Duration(milliseconds: 200);
