@@ -7,6 +7,7 @@ import '../services/visited_topics_service.dart';
 import '../services/learning_repository.dart';
 import '../main.dart';
 import 'quiz_screen.dart';
+import '../services/ad_service.dart';
 
 export '../services/ai_service.dart' show ChatMessage;
 
@@ -31,6 +32,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   final List<ChatMessage> _chatMessages = [];
   final TextEditingController _chatController = TextEditingController();
   bool _isSendingMessage = false;
+  final AdService _adService = AdService();
 
   void _showQuiz() async {
     if (_tutorial == null) return;
@@ -70,6 +72,14 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   void initState() {
     super.initState();
     _checkAndGenerateTutorial();
+    _adService.loadInterstitialAd();
+  }
+
+  @override
+  void dispose() {
+    _chatController.dispose();
+    _adService.dispose();
+    super.dispose();
   }
 
   int _calculateProgressPercentage() {
@@ -205,7 +215,11 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
               color: Colors.white,
               size: isDesktop ? 28 : 24,
             ),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              _adService.showInterstitialAd(
+                onAdClosed: () => Navigator.pop(context),
+              );
+            },
           ),
           const SizedBox(width: 12),
           Container(

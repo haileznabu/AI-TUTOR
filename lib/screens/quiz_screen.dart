@@ -5,6 +5,7 @@ import '../models/quiz_model.dart';
 import '../main.dart';
 import '../services/visited_topics_service.dart';
 import '../services/firestore_service.dart';
+import '../services/ad_service.dart';
 
 class QuizScreen extends StatefulWidget {
   final Quiz quiz;
@@ -29,6 +30,19 @@ class _QuizScreenState extends State<QuizScreen> {
   int _correctAnswers = 0;
   bool _quizCompleted = false;
   final FirestoreService _firestoreService = FirestoreService();
+  final AdService _adService = AdService();
+
+  @override
+  void initState() {
+    super.initState();
+    _adService.loadInterstitialAd();
+  }
+
+  @override
+  void dispose() {
+    _adService.dispose();
+    super.dispose();
+  }
 
   void _selectAnswer(int index) {
     if (_hasAnswered) return;
@@ -443,7 +457,11 @@ class _QuizScreenState extends State<QuizScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        _adService.showInterstitialAd(
+                          onAdClosed: () => Navigator.pop(context),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kPrimaryColor,
                         foregroundColor: Colors.white,
