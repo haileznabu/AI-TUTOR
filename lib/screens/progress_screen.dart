@@ -57,6 +57,7 @@ class ProgressScreen extends ConsumerWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
         Container(
@@ -73,7 +74,7 @@ class ProgressScreen extends ConsumerWidget {
         Text(
           'Your Progress',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            color: Colors.white,
+            color: isDark ? Colors.white : Colors.black87,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -85,47 +86,50 @@ class ProgressScreen extends ConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider);
 
     return profileAsync.when(
-      data: (profile) => _GlassCard(
-        child: Row(
-          children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFFF6B35), Color(0xFFFFAA00)],
+      data: (profile) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return _GlassCard(
+          child: Row(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFF6B35), Color(0xFFFFAA00)],
+                  ),
+                  shape: BoxShape.circle,
                 ),
-                shape: BoxShape.circle,
+                child: const Icon(Icons.local_fire_department, color: Colors.white, size: 32),
               ),
-              child: const Icon(Icons.local_fire_department, color: Colors.white, size: 32),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${profile.streakDays} Day Streak',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${profile.streakDays} Day Streak',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Keep it up! Learn something new today.',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 13,
+                    const SizedBox(height: 4),
+                    Text(
+                      'Keep it up! Learn something new today.',
+                      style: TextStyle(
+                        color: isDark ? Colors.white.withOpacity(0.7) : Colors.grey,
+                        fontSize: 13,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
       loading: () => const _SkeletonCard(height: 96),
       error: (_, __) => const SizedBox.shrink(),
     );
@@ -141,7 +145,7 @@ class ProgressScreen extends ConsumerWidget {
           Text(
             'Learning Metrics',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -224,7 +228,7 @@ class ProgressScreen extends ConsumerWidget {
           Text(
             'Weekly Activity',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -295,7 +299,7 @@ class ProgressScreen extends ConsumerWidget {
                 Text(
                   'Achievements',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
+                    color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -354,6 +358,7 @@ class _GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
@@ -361,9 +366,16 @@ class _GlassCard extends StatelessWidget {
         child: Container(
           padding: padding ?? const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.15)),
+            border: Border.all(color: isDark ? Colors.white.withOpacity(0.15) : Colors.grey.shade200),
+            boxShadow: isDark ? null : [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: child,
         ),
@@ -387,6 +399,7 @@ class _MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return _GlassCard(
       child: Column(
         children: [
@@ -403,7 +416,7 @@ class _MetricCard extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: isDark ? Colors.white.withOpacity(0.7) : Colors.grey,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
@@ -411,8 +424,8 @@ class _MetricCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black87,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -457,7 +470,9 @@ class _WeeklyChart extends StatelessWidget {
                         ? Text(
                             '$lessons',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white.withOpacity(0.8)
+                                  : Colors.black87,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -502,7 +517,9 @@ class _WeeklyChart extends StatelessWidget {
                     child: Text(
                       weekdays[index],
                       style: TextStyle(
-                        color: isToday ? Colors.white : Colors.white.withOpacity(0.6),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? (isToday ? Colors.white : Colors.white.withOpacity(0.6))
+                            : (isToday ? Colors.black87 : Colors.grey),
                         fontSize: 11,
                         fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                       ),
@@ -531,12 +548,13 @@ class _StatPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: isDark ? Colors.white.withOpacity(0.2) : Colors.grey.shade300),
       ),
       child: Column(
         children: [
@@ -544,8 +562,8 @@ class _StatPill extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black87,
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
@@ -553,7 +571,7 @@ class _StatPill extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
+              color: isDark ? Colors.white.withOpacity(0.6) : Colors.grey,
               fontSize: 10,
             ),
             textAlign: TextAlign.center,
@@ -571,6 +589,7 @@ class _AchievementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return _GlassCard(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -583,12 +602,14 @@ class _AchievementCard extends StatelessWidget {
               gradient: achievement.earned
                   ? const LinearGradient(colors: [kPrimaryColor, kAccentColor])
                   : null,
-              color: achievement.earned ? null : Colors.white.withOpacity(0.1),
+              color: achievement.earned ? null : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade200),
               shape: BoxShape.circle,
             ),
             child: Icon(
               achievement.icon,
-              color: achievement.earned ? Colors.white : Colors.white.withOpacity(0.3),
+              color: achievement.earned
+                  ? Colors.white
+                  : (isDark ? Colors.white.withOpacity(0.3) : Colors.grey),
               size: 24,
             ),
           ),
@@ -596,7 +617,9 @@ class _AchievementCard extends StatelessWidget {
           Text(
             achievement.title,
             style: TextStyle(
-              color: achievement.earned ? Colors.white : Colors.white.withOpacity(0.5),
+              color: achievement.earned
+                  ? (isDark ? Colors.white : Colors.black87)
+                  : (isDark ? Colors.white.withOpacity(0.5) : Colors.grey),
               fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
@@ -608,7 +631,7 @@ class _AchievementCard extends StatelessWidget {
           Text(
             achievement.description,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: isDark ? Colors.white.withOpacity(0.5) : Colors.grey,
               fontSize: 10,
             ),
             textAlign: TextAlign.center,

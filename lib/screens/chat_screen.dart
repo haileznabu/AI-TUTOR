@@ -230,9 +230,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Text(
                     message.content,
                     style: TextStyle(
-                      color: isUser
-                          ? Colors.white
-                          : (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87),
+                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                       fontSize: isDesktop ? 15 : 14,
                       height: 1.5,
                     ),
