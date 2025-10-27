@@ -1010,7 +1010,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
             },
             icon: Icon(
               _showChat ? Icons.close : Icons.chat_bubble_outline,
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
             ),
             tooltip: _showChat ? 'Close Chat' : 'Ask Questions',
           ),

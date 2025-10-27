@@ -188,6 +188,8 @@ class _PersonalizedHeader extends ConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider);
     final now = DateTime.now();
     final dateStr = DateFormat('EEE, MMM d • h:mm a').format(now);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
 
     return profileAsync.when(
       data: (profile) {
@@ -201,13 +203,13 @@ class _PersonalizedHeader extends ConsumerWidget {
                   'Hello, ${profile.name}! 👋',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: textColor,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   dateStr,
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 12),
                 ),
               ],
             ),
@@ -645,6 +647,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
     );
   }
   Widget _buildSearchBar(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
       child: ClipRRect(
@@ -653,17 +656,24 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: isDark ? Colors.white.withOpacity(0.1) : Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: isDark ? Colors.white.withOpacity(0.2) : Colors.grey.shade300),
+              boxShadow: isDark ? null : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
               decoration: InputDecoration(
                 hintText: 'Search topics...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                hintStyle: TextStyle(color: isDark ? Colors.white.withOpacity(0.5) : Colors.grey),
+                prefixIcon: Icon(Icons.search, color: isDark ? Colors.white70 : Colors.grey),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
@@ -706,13 +716,14 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
   }
 
   Widget _buildCategoryChip(String label, bool selected, {required VoidCallback onTap}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? kPrimaryColor : Colors.white.withOpacity(0.08),
-          border: Border.all(color: Colors.white.withOpacity(0.15)),
+          color: selected ? kPrimaryColor : (isDark ? Colors.white.withOpacity(0.08) : Colors.grey.shade100),
+          border: Border.all(color: isDark ? Colors.white.withOpacity(0.15) : Colors.grey.shade300),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -720,13 +731,13 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
           children: [
             Icon(
               selected ? Icons.check_circle : Icons.category,
-              color: Colors.white,
+              color: selected ? Colors.white : (isDark ? Colors.white : Colors.black87),
               size: 16,
             ),
             const SizedBox(width: 6),
             Text(
               label,
-              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+              style: TextStyle(color: selected ? Colors.white : (isDark ? Colors.white : Colors.black87), fontSize: 12, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -769,7 +780,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
                   Text(
                     'Recently visited',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
+                          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                           fontWeight: FontWeight.bold,
                         ),
                   ),
@@ -949,7 +960,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
               Text(
                 _selectedCategory == null ? 'All categories' : _selectedCategory!,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
+                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                       fontWeight: FontWeight.bold,
                     ),
               ),
@@ -962,7 +973,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
             child: Text(
               entry.key,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
+                    color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                     fontWeight: FontWeight.bold,
                   ),
             ),

@@ -63,14 +63,16 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     final bool isDesktop = kIsWeb || MediaQuery.of(context).size.width > 800;
     final double maxWidth = isDesktop ? 1000 : double.infinity;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
+      decoration: BoxDecoration(
+        gradient: isDark ? const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: kDarkGradient,
-        ),
+        ) : null,
+        color: isDark ? null : Colors.white,
       ),
       child: SafeArea(
         child: Center(
@@ -91,6 +93,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildHeader(bool isDesktop) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
     return Padding(
       padding: EdgeInsets.all(isDesktop ? 32.0 : 16.0),
       child: Row(
@@ -114,7 +118,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   'AI-TUTOR Chat',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textColor,
                         fontSize: isDesktop ? 28 : 24,
                       ),
                 ),
@@ -125,7 +129,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       .textTheme
                       .bodySmall
                       ?.copyWith(
-                        color: Colors.white70,
+                        color: isDark ? Colors.white70 : Colors.grey,
                         fontSize: isDesktop ? 15 : 14,
                       ),
                 ),
@@ -145,6 +149,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     if (_messages.isEmpty) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
       return Center(
         child: Padding(
           padding: EdgeInsets.all(isDesktop ? 48.0 : 24.0),
@@ -155,19 +160,19 @@ class _ChatScreenState extends State<ChatScreen> {
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.05),
+                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade100,
                 ),
                 child: Icon(
                   Icons.chat_bubble_outline,
                   size: isDesktop ? 80 : 64,
-                  color: Colors.white.withOpacity(0.3),
+                  color: isDark ? Colors.white.withOpacity(0.3) : Colors.grey,
                 ),
               ),
               const SizedBox(height: 24),
               Text(
                 'Start the conversation',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
+                  color: isDark ? Colors.white.withOpacity(0.9) : Colors.black87,
                   fontSize: isDesktop ? 20 : 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -176,7 +181,7 @@ class _ChatScreenState extends State<ChatScreen> {
               Text(
                 'Ask any question to get started with your learning',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.6),
+                  color: isDark ? Colors.white.withOpacity(0.6) : Colors.grey,
                   fontSize: isDesktop ? 15 : 14,
                 ),
                 textAlign: TextAlign.center,
@@ -225,7 +230,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Text(
                     message.content,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: isUser
+                          ? Colors.white
+                          : (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87),
                       fontSize: isDesktop ? 15 : 14,
                       height: 1.5,
                     ),
@@ -263,15 +270,18 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: TextField(
                     controller: _messageController,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                       fontSize: isDesktop ? 15 : 14,
                     ),
                     minLines: 1,
                     maxLines: isDesktop ? 5 : 4,
                     decoration: InputDecoration(
                       hintText: 'Type a message...',
-                      hintStyle:
-                          TextStyle(color: Colors.white.withOpacity(0.5)),
+                      hintStyle: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white.withOpacity(0.5)
+                            : Colors.grey,
+                      ),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: isDesktop ? 20 : 16,
