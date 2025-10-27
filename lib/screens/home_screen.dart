@@ -63,6 +63,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     final int currentIndex = ref.watch(_navIndexProvider);
     final bool isDesktop = _isDesktopPlatform();
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     final Widget body = switch (currentIndex) {
       0 => _HomeTab(onSignOut: () => _signOut(context), onRefresh: _refreshAll),
@@ -74,12 +75,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (isDesktop) {
       return Scaffold(
         body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
+          decoration: BoxDecoration(
+            gradient: isDark ? const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: kDarkGradient,
-            ),
+            ) : null,
+            color: isDark ? null : Colors.white,
           ),
           child: Row(
             children: [
@@ -100,12 +102,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return Scaffold(
       extendBody: true,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
+        decoration: BoxDecoration(
+          gradient: isDark ? const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: kDarkGradient,
-          ),
+          ) : null,
+          color: isDark ? null : Colors.white,
         ),
         child: SafeArea(child: body),
       ),
@@ -835,54 +838,66 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
           },
         ),
         if (hasMore)
-          Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 4),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withOpacity(0.15)),
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          _expandedCategories[category] = !isExpanded;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              isExpanded ? Icons.expand_less : Icons.expand_more,
-                              color: kPrimaryColor,
-                              size: 20,
+          Builder(
+            builder: (context) {
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+              return Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 4),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: isDark ? Colors.white.withOpacity(0.15) : Colors.grey.shade200),
+                        boxShadow: isDark ? null : [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _expandedCategories[category] = !isExpanded;
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  isExpanded ? Icons.expand_less : Icons.expand_more,
+                                  color: kPrimaryColor,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  isExpanded ? 'Wrap up' : 'See more (${topics.length - 3} more)',
+                                  style: const TextStyle(
+                                    color: kPrimaryColor,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              isExpanded ? 'Wrap up' : 'See more (${topics.length - 3} more)',
-                              style: const TextStyle(
-                                color: kPrimaryColor,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
       ],
     );
@@ -897,16 +912,24 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
     }
 
     if (topics.isEmpty) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 24.0),
         child: Center(
           child: Column(
             children: [
-              Icon(Icons.search_off, size: 48, color: Colors.white.withOpacity(0.3)),
+              Icon(
+                Icons.search_off,
+                size: 48,
+                color: isDark ? Colors.white.withOpacity(0.3) : Colors.grey,
+              ),
               const SizedBox(height: 12),
               Text(
                 'No topics found',
-                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14),
+                style: TextStyle(
+                  color: isDark ? Colors.white.withOpacity(0.5) : Colors.grey,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
@@ -972,6 +995,7 @@ class _TopicCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: ClipRRect(
@@ -980,9 +1004,16 @@ class _TopicCard extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
+              color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.15)),
+              border: Border.all(color: isDark ? Colors.white.withOpacity(0.15) : Colors.grey.shade200),
+              boxShadow: isDark ? null : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Material(
               color: Colors.transparent,
@@ -1011,8 +1042,8 @@ class _TopicCard extends StatelessWidget {
                           children: [
                             Text(
                               topic.title,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -1021,7 +1052,7 @@ class _TopicCard extends StatelessWidget {
                             Text(
                               topic.description,
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.7),
+                                color: isDark ? Colors.white.withOpacity(0.7) : Colors.grey,
                                 fontSize: 13,
                               ),
                               maxLines: 2,
@@ -1049,7 +1080,7 @@ class _TopicCard extends StatelessWidget {
                       ),
                       Icon(
                         Icons.arrow_forward_ios,
-                        color: Colors.white.withOpacity(0.5),
+                        color: isDark ? Colors.white.withOpacity(0.5) : Colors.grey,
                         size: 16,
                       ),
                     ],
@@ -1101,6 +1132,7 @@ class _VisitedTopicTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       width: 220,
       child: GlassCard(
@@ -1132,8 +1164,8 @@ class _VisitedTopicTile extends StatelessWidget {
                           topic.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black87,
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                           ),
@@ -1141,7 +1173,10 @@ class _VisitedTopicTile extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           topic.category,
-                          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11),
+                          style: TextStyle(
+                            color: isDark ? Colors.white.withOpacity(0.7) : Colors.grey,
+                            fontSize: 11,
+                          ),
                         ),
                       ],
                     ),
@@ -1158,7 +1193,7 @@ class _VisitedTopicTile extends StatelessWidget {
                       Text(
                         'Progress',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: isDark ? Colors.white.withOpacity(0.6) : Colors.grey,
                           fontSize: 10,
                           fontWeight: FontWeight.w500,
                         ),
@@ -1178,7 +1213,7 @@ class _VisitedTopicTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: progressPercentage / 100,
-                      backgroundColor: Colors.white.withOpacity(0.1),
+                      backgroundColor: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade200,
                       valueColor: const AlwaysStoppedAnimation<Color>(kPrimaryColor),
                       minHeight: 6,
                     ),
@@ -1210,6 +1245,8 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: BackdropFilter(
@@ -1217,9 +1254,19 @@ class GlassCard extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
             borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+            border: Border.all(
+              color: isDark ? Colors.white.withOpacity(0.15) : Colors.grey.shade200,
+              width: 1,
+            ),
+            boxShadow: isDark ? null : [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: child,
         ),
@@ -1489,23 +1536,39 @@ class _GlassNavBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: BottomNavigationBar(
-          backgroundColor: Colors.white.withOpacity(0.06),
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white60,
-          type: BottomNavigationBarType.fixed,
-          currentIndex: currentIndex,
-          onTap: onTap,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_rounded), label: 'Chat'),
-            BottomNavigationBarItem(icon: Icon(Icons.insights_rounded), label: 'Progress'),
-            BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
-          ],
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? Colors.white.withOpacity(0.06) : Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: isDark ? null : Border.all(color: Colors.grey.shade200),
+            boxShadow: isDark ? null : [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: BottomNavigationBar(
+            backgroundColor: Colors.transparent,
+            selectedItemColor: isDark ? Colors.white : kPrimaryColor,
+            unselectedItemColor: isDark ? Colors.white60 : Colors.grey,
+            type: BottomNavigationBarType.fixed,
+            currentIndex: currentIndex,
+            onTap: onTap,
+            elevation: 0,
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_rounded), label: 'Chat'),
+              BottomNavigationBarItem(icon: Icon(Icons.insights_rounded), label: 'Progress'),
+              BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
+            ],
+          ),
         ),
       ),
     );
