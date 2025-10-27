@@ -178,14 +178,15 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isDesktop = kIsWeb || MediaQuery.of(context).size.width > 800;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: kDarkGradient,
+            colors: isDark ? kDarkGradient : [Colors.grey[50]!, Colors.grey[100]!],
           ),
         ),
         child: SafeArea(
@@ -205,6 +206,10 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   }
 
   Widget _buildAppBar(bool isDesktop) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtextColor = isDark ? Colors.white.withOpacity(0.7) : Colors.black54;
+
     return Padding(
       padding: EdgeInsets.all(isDesktop ? 32.0 : 16.0),
       child: Row(
@@ -212,7 +217,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
           IconButton(
             icon: Icon(
               Icons.arrow_back,
-              color: Colors.white,
+              color: textColor,
               size: isDesktop ? 28 : 24,
             ),
             onPressed: () {
@@ -244,7 +249,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                 Text(
                   widget.topic.title,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: textColor,
                     fontSize: isDesktop ? 24 : 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -261,13 +266,13 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                         Icon(
                           Icons.category,
                           size: isDesktop ? 16 : 14,
-                          color: Colors.white.withOpacity(0.7),
+                          color: subtextColor,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           widget.topic.category,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
+                            color: subtextColor,
                             fontSize: isDesktop ? 14 : 12,
                           ),
                         ),
@@ -280,13 +285,13 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                           Icon(
                             Icons.offline_bolt,
                             size: isDesktop ? 16 : 14,
-                            color: Colors.white.withOpacity(0.7),
+                            color: subtextColor,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             'Cached',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
+                              color: subtextColor,
                               fontSize: isDesktop ? 14 : 12,
                             ),
                           ),
@@ -319,6 +324,10 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   }
 
   Widget _buildErrorState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtextColor = isDark ? Colors.white.withOpacity(0.7) : Colors.black54;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -328,13 +337,13 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
             Icon(
               Icons.error_outline,
               size: 64,
-              color: Colors.white.withOpacity(0.5),
+              color: isDark ? Colors.white.withOpacity(0.5) : Colors.black45,
             ),
             const SizedBox(height: 16),
             Text(
               'Something went wrong',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: textColor,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -343,7 +352,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
             Text(
               _error!,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: subtextColor,
                 fontSize: 14,
               ),
               textAlign: TextAlign.center,
@@ -366,6 +375,9 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   }
 
   Widget _buildLoadingState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final subtextColor = isDark ? Colors.white.withOpacity(0.7) : Colors.black54;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -375,7 +387,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
           Text(
             'Generating your tutorial...',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: subtextColor,
               fontSize: 16,
             ),
           ),
@@ -385,10 +397,13 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   }
 
   Widget _buildEmptyState() {
-    return const Center(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final subtextColor = isDark ? Colors.white70 : Colors.black54;
+
+    return Center(
       child: Text(
         'No tutorial available',
-        style: TextStyle(color: Colors.white70, fontSize: 16),
+        style: TextStyle(color: subtextColor, fontSize: 16),
       ),
     );
   }
@@ -435,9 +450,15 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
           Container(
             width: 450,
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.2),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.black.withOpacity(0.2)
+                  : Colors.grey[200],
               border: Border(
-                left: BorderSide(color: Colors.white.withOpacity(0.1)),
+                left: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.1),
+                ),
               ),
             ),
             child: _buildDesktopChatSection(),
@@ -470,6 +491,8 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   }
 
   Widget _buildStepIndicator() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -484,7 +507,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
               decoration: BoxDecoration(
                 color: isCompleted
                     ? kPrimaryColor
-                    : Colors.white.withOpacity(0.2),
+                    : isDark ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -495,6 +518,12 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   }
 
   Widget _buildSummaryCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtextColor = isDark ? Colors.white.withOpacity(0.9) : Colors.black87;
+    final bgColor = isDark ? Colors.white.withOpacity(0.08) : Colors.white;
+    final borderColor = isDark ? Colors.white.withOpacity(0.15) : Colors.black.withOpacity(0.1);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
@@ -502,21 +531,21 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: bgColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.15)),
+            border: Border.all(color: borderColor),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.lightbulb, color: kPrimaryColor, size: 20),
-                  SizedBox(width: 8),
+                  const Icon(Icons.lightbulb, color: kPrimaryColor, size: 20),
+                  const SizedBox(width: 8),
                   Text(
                     'What you\'ll learn',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: textColor,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -527,7 +556,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
               Text(
                 _tutorial!.summary,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
+                  color: subtextColor,
                   fontSize: 14,
                   height: 1.5,
                 ),
@@ -541,6 +570,14 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
 
   Widget _buildCurrentStep() {
     final step = _tutorial!.steps[_currentStepIndex];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtextColor = isDark ? Colors.white.withOpacity(0.9) : Colors.black87;
+    final bgColor = isDark ? Colors.white.withOpacity(0.08) : Colors.white;
+    final borderColor = isDark ? Colors.white.withOpacity(0.15) : Colors.black.withOpacity(0.1);
+    final codeBgColor = isDark ? Colors.black.withOpacity(0.3) : Colors.grey[100]!;
+    final codeTextColor = isDark ? Colors.white : Colors.black87;
+    final codeLabelColor = isDark ? Colors.white.withOpacity(0.7) : Colors.black54;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
@@ -549,9 +586,9 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: bgColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.15)),
+            border: Border.all(color: borderColor),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -580,8 +617,8 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
               const SizedBox(height: 12),
               Text(
                 step.title,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: textColor,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -590,7 +627,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
               Text(
                 step.content,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
+                  color: subtextColor,
                   fontSize: 15,
                   height: 1.6,
                 ),
@@ -600,7 +637,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
+                    color: codeBgColor,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: kPrimaryColor.withOpacity(0.3)),
                   ),
@@ -614,7 +651,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                           Text(
                             'Code Example',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
+                              color: codeLabelColor,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -624,8 +661,8 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                       const SizedBox(height: 8),
                       Text(
                         step.codeExample!,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: codeTextColor,
                           fontSize: 13,
                           fontFamily: 'monospace',
                         ),
@@ -652,7 +689,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                         child: Text(
                           step.explanation!,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
+                            color: subtextColor,
                             fontSize: 14,
                             height: 1.5,
                           ),
@@ -670,31 +707,37 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   }
 
   Widget _buildDesktopChatSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtextColor = isDark ? Colors.white.withOpacity(0.7) : Colors.black54;
+    final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
+    final bgOverlay = isDark ? Colors.black.withOpacity(0.2) : Colors.grey[100]!;
+
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             border: Border(
-              bottom: BorderSide(color: Colors.white.withOpacity(0.1)),
+              bottom: BorderSide(color: borderColor),
             ),
           ),
           child: Row(
             children: [
               const Icon(Icons.chat_bubble, color: kPrimaryColor, size: 24),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Ask Questions',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: textColor,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close, color: Colors.white),
+                icon: Icon(Icons.close, color: textColor),
                 onPressed: () {
                   setState(() {
                     _showChat = false;
@@ -716,13 +759,13 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                         Icon(
                           Icons.question_answer,
                           size: 64,
-                          color: Colors.white.withOpacity(0.3),
+                          color: isDark ? Colors.white.withOpacity(0.3) : Colors.black26,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'Ask follow-up questions',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
+                            color: subtextColor,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -731,7 +774,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                         Text(
                           'Get clarification on this step',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
+                            color: isDark ? Colors.white.withOpacity(0.5) : Colors.black45,
                             fontSize: 14,
                           ),
                           textAlign: TextAlign.center,
@@ -755,18 +798,18 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                         decoration: BoxDecoration(
                           color: isUser
                               ? kPrimaryColor.withOpacity(0.2)
-                              : Colors.white.withOpacity(0.08),
+                              : isDark ? Colors.white.withOpacity(0.08) : Colors.grey[200],
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: isUser
                                 ? kPrimaryColor.withOpacity(0.3)
-                                : Colors.white.withOpacity(0.15),
+                                : borderColor,
                           ),
                         ),
                         child: Text(
                           message.content,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: textColor,
                             fontSize: 14,
                             height: 1.5,
                           ),
@@ -779,9 +822,9 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.2),
+            color: bgOverlay,
             border: Border(
-              top: BorderSide(color: Colors.white.withOpacity(0.1)),
+              top: BorderSide(color: borderColor),
             ),
           ),
           child: Row(
@@ -789,19 +832,19 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
               Expanded(
                 child: TextField(
                   controller: _chatController,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  style: TextStyle(color: textColor, fontSize: 14),
                   maxLines: 3,
                   minLines: 1,
                   decoration: InputDecoration(
                     hintText: 'Ask a question...',
-                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                    hintStyle: TextStyle(color: isDark ? Colors.white.withOpacity(0.5) : Colors.black45),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -846,11 +889,18 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   }
 
   Widget _buildChatSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtextColor = isDark ? Colors.white.withOpacity(0.5) : Colors.black45;
+    final borderColor = isDark ? Colors.white.withOpacity(0.15) : Colors.black.withOpacity(0.15);
+    final bgOverlay = isDark ? Colors.black.withOpacity(0.3) : Colors.grey[200]!;
+    final bgOverlay2 = isDark ? Colors.black.withOpacity(0.2) : Colors.grey[100]!;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
+        color: bgOverlay,
         border: Border(
-          top: BorderSide(color: Colors.white.withOpacity(0.15)),
+          top: BorderSide(color: borderColor),
         ),
       ),
       child: Column(
@@ -863,7 +913,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                     child: Text(
                       'Ask follow-up...',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: subtextColor,
                         fontSize: 14,
                       ),
                     ),
@@ -884,13 +934,13 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                           decoration: BoxDecoration(
                             color: isUser
                                 ? kPrimaryColor
-                                : Colors.white.withOpacity(0.1),
+                                : isDark ? Colors.white.withOpacity(0.1) : Colors.grey[300],
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             message.content,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: isUser ? Colors.white : textColor,
                               fontSize: 14,
                             ),
                           ),
@@ -902,9 +952,9 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.2),
+              color: bgOverlay2,
               border: Border(
-                top: BorderSide(color: Colors.white.withOpacity(0.1)),
+                top: BorderSide(color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1)),
               ),
             ),
             child: Row(
@@ -912,17 +962,17 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                 Expanded(
                   child: TextField(
                     controller: _chatController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: textColor),
                     decoration: InputDecoration(
                       hintText: 'Ask follow-up questions about this topic...',
-                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                      hintStyle: TextStyle(color: subtextColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                        borderSide: BorderSide(color: isDark ? Colors.white.withOpacity(0.3) : Colors.black.withOpacity(0.3)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                        borderSide: BorderSide(color: isDark ? Colors.white.withOpacity(0.3) : Colors.black.withOpacity(0.3)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -995,6 +1045,9 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   }
 
   Widget _buildNavigationButtons() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconColor = isDark ? Colors.white : Colors.black87;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -1010,7 +1063,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
             },
             icon: Icon(
               _showChat ? Icons.close : Icons.chat_bubble_outline,
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+              color: iconColor,
             ),
             tooltip: _showChat ? 'Close Chat' : 'Ask Questions',
           ),
@@ -1027,8 +1080,8 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                 icon: const Icon(Icons.arrow_back),
                 label: const Text('Previous'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white.withOpacity(0.1),
-                  foregroundColor: Colors.white,
+                  backgroundColor: isDark ? Colors.white.withOpacity(0.1) : Colors.grey[300],
+                  foregroundColor: isDark ? Colors.white : Colors.black87,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
