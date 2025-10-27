@@ -71,7 +71,7 @@ class MyApp extends ConsumerWidget {
           error: Colors.red.shade400,
         ),
         scaffoldBackgroundColor: const Color(0xFFFAFAFA),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
