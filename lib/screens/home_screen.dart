@@ -179,59 +179,54 @@ class _HomeTab extends ConsumerWidget {
   }
 }
 
-class _PersonalizedHeader extends ConsumerWidget {
+class _PersonalizedHeader extends StatelessWidget {
   final VoidCallback onSignOut;
   const _PersonalizedHeader({required this.onSignOut});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final profileAsync = ref.watch(userProfileProvider);
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final userName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
     final now = DateTime.now();
     final dateStr = DateFormat('EEE, MMM d • h:mm a').format(now);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
 
-    return profileAsync.when(
-      data: (profile) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Hello, ${profile.name}! 👋',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  dateStr,
-                  style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 12),
-                ),
-              ],
-            ),
-            GestureDetector(
-              onTap: onSignOut,
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [kPrimaryColor, kAccentColor],
-                  ),
-                ),
-                child: const Icon(Icons.logout, color: Colors.white, size: 20),
+            Text(
+              'Hello, $userName! 👋',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: textColor,
               ),
             ),
+            const SizedBox(height: 4),
+            Text(
+              dateStr,
+              style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 12),
+            ),
           ],
-        );
-      },
-      loading: () => const _Skeleton(height: 60),
-      error: (_, __) => const _ErrorText(),
+        ),
+        GestureDetector(
+          onTap: onSignOut,
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                colors: [kPrimaryColor, kAccentColor],
+              ),
+            ),
+            child: const Icon(Icons.logout, color: Colors.white, size: 20),
+          ),
+        ),
+      ],
     );
   }
 }
