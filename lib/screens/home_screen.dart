@@ -33,6 +33,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   final StateProvider<int> _navIndexProvider = StateProvider<int>((ref) => 0);
 
   Future<void> _signOut(BuildContext context) async {
+    await VisitedTopicsService.clearAll();
     await FirebaseAuth.instance.signOut();
     if (!context.mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
@@ -589,38 +590,29 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
   }
 
   Future<List<dynamic>> _loadRecentlyVisitedWithProgress() async {
-    final ids = await VisitedTopicsService.getVisitedIdsOrdered();
-    final localProgressMap = await VisitedTopicsService.getVisitedTopicsWithProgress();
-
     final userId = FirebaseAuth.instance.currentUser?.uid;
-    Map<String, int> firestoreProgressMap = {};
 
     if (userId != null) {
       try {
         final firestoreService = FirestoreService();
-        firestoreProgressMap = await firestoreService.getUserProgress(userId);
+        final firestoreProgressMap = await firestoreService.getUserProgress(userId);
+        final firestoreTopics = await firestoreService.getVisitedTopics(userId);
 
-        for (final id in firestoreProgressMap.keys) {
-          final firestoreProgress = firestoreProgressMap[id] ?? 0;
-          final localProgress = localProgressMap[id] ?? 0;
-
-          if (firestoreProgress > localProgress) {
-            await VisitedTopicsService.updateProgress(id, firestoreProgress);
-          }
+        for (final topicId in firestoreTopics) {
+          final progress = firestoreProgressMap[topicId] ?? 0;
+          await VisitedTopicsService.recordVisit(topicId, progressPercentage: progress);
         }
+
+        final ids = await VisitedTopicsService.getVisitedIdsOrdered();
+        return [ids, firestoreProgressMap];
       } catch (e) {
-        debugPrint('Failed to load Firestore progress: $e');
+        debugPrint('Failed to load Firestore data: $e');
       }
     }
 
-    final mergedProgressMap = <String, int>{};
-    for (final id in ids) {
-      final firestoreProgress = firestoreProgressMap[id] ?? 0;
-      final localProgress = localProgressMap[id] ?? 0;
-      mergedProgressMap[id] = firestoreProgress > localProgress ? firestoreProgress : localProgress;
-    }
-
-    return [ids, mergedProgressMap];
+    final ids = await VisitedTopicsService.getVisitedIdsOrdered();
+    final localProgressMap = await VisitedTopicsService.getVisitedTopicsWithProgress();
+    return [ids, localProgressMap];
   }
 
   @override
