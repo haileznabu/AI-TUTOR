@@ -486,7 +486,7 @@ class _SignInFormState extends State<SignInForm> {
             }
             setState(() => _isLoading = true);
             try {
-              final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+              await FirebaseAuth.instance.signInWithEmailAndPassword(
                 email: email,
                 password: password,
               );
@@ -511,10 +511,6 @@ class _SignInFormState extends State<SignInForm> {
             }
           },
         ),
-        const SizedBox(height: 16),
-        const DividerWithText(label: 'Or continue with'),
-        const SizedBox(height: 24),
-        const SocialRow(),
       ],
     );
   }
@@ -644,11 +640,6 @@ class _SignUpFormState extends State<SignUpForm> {
             }
           },
         ),
-        const SizedBox(height: 16),
-        const DividerWithText(label: 'Or continue with'),
-        const SizedBox(height: 24),
-        const SocialRow(),
-        const SizedBox(height: 20),
       ],
     );
   }
