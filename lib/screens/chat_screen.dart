@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../main.dart';
 import '../services/ai_service.dart';
 import '../services/firestore_service.dart';
+import '../services/voice_service.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -17,8 +18,12 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final List<ChatMessage> _messages = <ChatMessage>[];
   final FirestoreService _firestoreService = FirestoreService();
+  final VoiceService _voiceService = VoiceService();
   bool _isSending = false;
   bool _isLoading = true;
+  bool _isVoiceMode = false;
+  bool _isSpeaking = false;
+  String _partialTranscript = '';
 
   @override
   void initState() {
@@ -56,6 +61,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void dispose() {
     _messageController.dispose();
+    _voiceService.dispose();
     super.dispose();
   }
 
@@ -274,7 +280,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     minLines: 1,
                     maxLines: isDesktop ? 5 : 4,
                     decoration: InputDecoration(
-                      hintText: 'Type a message...',
+                      hintText: _isVoiceMode ? (_partialTranscript.isEmpty ? 'Listening...' : _partialTranscript) : 'Type a message...',
                       hintStyle: TextStyle(
                         color: Theme.of(context).brightness == Brightness.dark
                             ? Colors.white.withOpacity(0.5)
@@ -286,14 +292,16 @@ class _ChatScreenState extends State<ChatScreen> {
                         vertical: isDesktop ? 16 : 12,
                       ),
                     ),
-                    enabled: !_isSending,
+                    enabled: !_isSending && !_isVoiceMode,
                     onSubmitted: (_) => _handleSend(),
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
+          _buildVoiceButton(isDesktop),
+          const SizedBox(width: 8),
           _buildSendButton(isDesktop),
         ],
       ),
@@ -325,6 +333,70 @@ class _ChatScreenState extends State<ChatScreen> {
             : Icon(Icons.send, size: isDesktop ? 24 : 20),
       ),
     );
+  }
+
+  Widget _buildVoiceButton(bool isDesktop) {
+    final double size = isDesktop ? 52 : 44;
+    return SizedBox(
+      height: size,
+      width: size,
+      child: ElevatedButton(
+        onPressed: _isSending ? null : _toggleVoiceMode,
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.zero,
+          backgroundColor: _isVoiceMode ? Colors.red : kAccentColor,
+          foregroundColor: Colors.white,
+          shape: const CircleBorder(),
+        ),
+        child: Icon(
+          _isVoiceMode ? Icons.mic : Icons.mic_none,
+          size: isDesktop ? 24 : 20,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _toggleVoiceMode() async {
+    if (_isVoiceMode) {
+      await _voiceService.stopListening();
+      setState(() {
+        _isVoiceMode = false;
+        _partialTranscript = '';
+      });
+    } else {
+      final initialized = await _voiceService.initialize();
+      if (!initialized) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Voice recognition not available')),
+        );
+        return;
+      }
+
+      setState(() {
+        _isVoiceMode = true;
+      });
+
+      await _voiceService.startListening(
+        onResult: (text) {
+          if (mounted) {
+            setState(() {
+              _messageController.text = text;
+              _isVoiceMode = false;
+              _partialTranscript = '';
+            });
+            _handleSend();
+          }
+        },
+        onPartial: (text) {
+          if (mounted) {
+            setState(() {
+              _partialTranscript = text;
+            });
+          }
+        },
+      );
+    }
   }
 
   Future<void> _handleSend() async {
@@ -374,6 +446,8 @@ class _ChatScreenState extends State<ChatScreen> {
             debugPrint('[Chat Cache] Failed to save assistant message to Firestore: $e');
           }
         }
+
+        _speakResponse(reply);
       }
     } catch (e) {
       debugPrint('Chat error details: $e');
@@ -399,5 +473,15 @@ class _ChatScreenState extends State<ChatScreen> {
         });
       }
     }
+  }
+
+  Future<void> _speakResponse(String text) async {
+    setState(() {
+      _isSpeaking = true;
+    });
+    await _voiceService.speak(text);
+    setState(() {
+      _isSpeaking = false;
+    });
   }
 }
