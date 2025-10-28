@@ -176,56 +176,6 @@ class AIService {
     }
   }
 
-  Future<Map<String, dynamic>> generateMindMap(String topicTitle, String summary) async {
-    if (!await isConfigured) {
-      throw Exception('API key not configured. Please set your API key first.');
-    }
-
-    try {
-      final String prompt = _buildMindMapPrompt(topicTitle, summary);
-      final Map<String, dynamic> response = await _callGeminiAPI(prompt);
-      return response;
-    } catch (e) {
-      throw Exception('Failed to generate mind map: $e');
-    }
-  }
-
-  String _buildMindMapPrompt(String topicTitle, String summary) {
-    return '''
-Create a hierarchical mind map structure for the topic: "$topicTitle"
-Summary: "$summary"
-
-Generate a tree structure with the topic as root and key concepts as branches.
-Each node should have an id, label, and optional children.
-
-Format the response as JSON with this structure:
-{
-  "id": "root",
-  "label": "Topic Title",
-  "children": [
-    {
-      "id": "concept1",
-      "label": "Concept 1",
-      "children": [
-        {
-          "id": "detail1",
-          "label": "Detail 1",
-          "children": []
-        }
-      ]
-    }
-  ]
-}
-
-Rules:
-- Maximum 3 levels deep
-- 3-5 main branches (children of root)
-- 2-4 sub-branches per main branch
-- Keep labels short (2-4 words)
-- Return ONLY valid JSON
-''';
-  }
-
   // Simple chat API for AI tab
   Future<String> sendChatResponse(List<ChatMessage> messages) async {
     if (!await isConfigured) {
