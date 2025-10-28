@@ -476,12 +476,10 @@ class LearningRepository {
       final startOfDay = DateTime(date.year, date.month, date.day);
       final endOfDay = startOfDay.add(const Duration(days: 1));
 
-      final progressSnapshot = await FirebaseFirestore.instance
+      final visitedSnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
-          .collection('progress')
-          .where('lastUpdated', isGreaterThanOrEqualTo: startOfDay)
-          .where('lastUpdated', isLessThan: endOfDay)
+          .collection('visitedTopics')
           .get();
 
       final quizSnapshot = await FirebaseFirestore.instance
@@ -493,9 +491,17 @@ class LearningRepository {
           .get();
 
       final uniqueTopics = <String>{};
-      for (var doc in progressSnapshot.docs) {
-        uniqueTopics.add(doc.data()['topicId'] as String);
+
+      for (var doc in visitedSnapshot.docs) {
+        final visitedAt = doc.data()['visitedAt'] as Timestamp?;
+        if (visitedAt != null) {
+          final visitDate = visitedAt.toDate();
+          if (visitDate.isAfter(startOfDay) && visitDate.isBefore(endOfDay)) {
+            uniqueTopics.add(doc.data()['topicId'] as String);
+          }
+        }
       }
+
       for (var doc in quizSnapshot.docs) {
         uniqueTopics.add(doc.data()['topicId'] as String);
       }
