@@ -7,6 +7,7 @@ class VoiceService {
   final SpeechToText _speechToText = SpeechToText();
   final FlutterTts _flutterTts = FlutterTts();
   bool _isInitialized = false;
+  VoidCallback? _onSpeakComplete;
 
   Future<bool> initialize() async {
     if (_isInitialized) return true;
@@ -35,6 +36,15 @@ class VoiceService {
       await _flutterTts.setVolume(1.0);
       await _flutterTts.setPitch(1.0);
 
+      _flutterTts.setCompletionHandler(() {
+        _onSpeakComplete?.call();
+      });
+
+      _flutterTts.setErrorHandler((msg) {
+        debugPrint('TTS error: $msg');
+        _onSpeakComplete?.call();
+      });
+
       _isInitialized = true;
       return true;
     } catch (e) {
@@ -45,25 +55,41 @@ class VoiceService {
 
   bool get isListening => _speechToText.isListening;
 
+  void setOnSpeakComplete(VoidCallback callback) {
+    _onSpeakComplete = callback;
+  }
+
   Future<void> startListening({
     required Function(String) onResult,
     Function(String)? onPartial,
+    Function(String)? onError,
   }) async {
     if (!_isInitialized) {
       final initialized = await initialize();
       if (!initialized) return;
     }
 
-    await _speechToText.listen(
-      onResult: (result) {
-        if (result.finalResult) {
-          onResult(result.recognizedWords);
-        } else if (onPartial != null) {
-          onPartial(result.recognizedWords);
-        }
-      },
-      listenMode: ListenMode.confirmation,
-    );
+    try {
+      await _speechToText.listen(
+        onResult: (result) {
+          if (result.finalResult) {
+            onResult(result.recognizedWords);
+          } else if (onPartial != null) {
+            onPartial(result.recognizedWords);
+          }
+        },
+        listenMode: ListenMode.confirmation,
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 3),
+        cancelOnError: true,
+        onSoundLevelChange: (level) {
+          debugPrint('Sound level: $level');
+        },
+      );
+    } catch (e) {
+      debugPrint('Listen error: $e');
+      onError?.call(e.toString());
+    }
   }
 
   Future<void> stopListening() async {
@@ -72,8 +98,13 @@ class VoiceService {
 
   Future<void> speak(String text) async {
     if (!_isInitialized) {
-      await initialize();
+      final initialized = await initialize();
+      if (!initialized) {
+        throw Exception('TTS not available');
+      }
     }
+
+    await _flutterTts.stop();
     await _flutterTts.speak(text);
   }
 

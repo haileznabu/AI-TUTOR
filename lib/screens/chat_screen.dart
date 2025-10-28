@@ -24,11 +24,25 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isVoiceMode = false;
   bool _isSpeaking = false;
   String _partialTranscript = '';
+  String? _currentlySpeakingMessageId;
 
   @override
   void initState() {
     super.initState();
     _loadChatHistory();
+    _initializeVoiceService();
+  }
+
+  Future<void> _initializeVoiceService() async {
+    await _voiceService.initialize();
+    _voiceService.setOnSpeakComplete(() {
+      if (mounted) {
+        setState(() {
+          _isSpeaking = false;
+          _currentlySpeakingMessageId = null;
+        });
+      }
+    });
   }
 
   Future<void> _loadChatHistory() async {
@@ -63,6 +77,14 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController.dispose();
     _voiceService.dispose();
     super.dispose();
+  }
+
+  Future<void> _stopSpeaking() async {
+    await _voiceService.stop();
+    setState(() {
+      _isSpeaking = false;
+      _currentlySpeakingMessageId = null;
+    });
   }
 
   @override
@@ -233,13 +255,30 @@ class _ChatScreenState extends State<ChatScreen> {
                         : Colors.white.withOpacity(0.15),
                     ),
                   ),
-                  child: Text(
-                    message.content,
-                    style: TextStyle(
-                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
-                      fontSize: isDesktop ? 15 : 14,
-                      height: 1.5,
-                    ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          message.content,
+                          style: TextStyle(
+                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+                            fontSize: isDesktop ? 15 : 14,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                      if (!isUser)
+                        IconButton(
+                          icon: Icon(
+                            _isSpeaking ? Icons.stop_circle : Icons.volume_up,
+                            size: 20,
+                            color: _isSpeaking ? Colors.red : Colors.white70,
+                          ),
+                          onPressed: () => _isSpeaking ? _stopSpeaking() : _speakResponse(message.content),
+                          tooltip: _isSpeaking ? 'Stop' : 'Listen',
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -385,7 +424,9 @@ class _ChatScreenState extends State<ChatScreen> {
               _isVoiceMode = false;
               _partialTranscript = '';
             });
-            _handleSend();
+            if (text.isNotEmpty) {
+              _handleSend();
+            }
           }
         },
         onPartial: (text) {
@@ -393,6 +434,17 @@ class _ChatScreenState extends State<ChatScreen> {
             setState(() {
               _partialTranscript = text;
             });
+          }
+        },
+        onError: (error) {
+          if (mounted) {
+            setState(() {
+              _isVoiceMode = false;
+              _partialTranscript = '';
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Voice error: $error')),
+            );
           }
         },
       );
@@ -447,7 +499,9 @@ class _ChatScreenState extends State<ChatScreen> {
           }
         }
 
-        _speakResponse(reply);
+        if (!_isSpeaking) {
+          _speakResponse(reply);
+        }
       }
     } catch (e) {
       debugPrint('Chat error details: $e');
@@ -476,12 +530,30 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _speakResponse(String text) async {
+    if (_isSpeaking) {
+      await _stopSpeaking();
+      return;
+    }
+
     setState(() {
       _isSpeaking = true;
     });
-    await _voiceService.speak(text);
-    setState(() {
-      _isSpeaking = false;
-    });
+
+    try {
+      await _voiceService.speak(text);
+    } catch (e) {
+      debugPrint('TTS error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to speak response')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSpeaking = false;
+        });
+      }
+    }
   }
 }
