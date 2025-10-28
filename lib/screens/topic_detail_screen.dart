@@ -8,6 +8,7 @@ import '../services/learning_repository.dart';
 import '../main.dart';
 import 'quiz_screen.dart';
 import '../services/ad_service.dart';
+import '../widgets/mind_map_widget.dart';
 
 export '../services/ai_service.dart' show ChatMessage;
 
@@ -33,6 +34,8 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   final TextEditingController _chatController = TextEditingController();
   bool _isSendingMessage = false;
   final AdService _adService = AdService();
+  bool _isGeneratingMindMap = false;
+  MindMapNode? _mindMapData;
 
   void _showQuiz() async {
     if (_tutorial == null) return;
@@ -1053,6 +1056,15 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
       child: Row(
         children: [
           IconButton(
+            onPressed: _generateMindMap,
+            icon: Icon(
+              Icons.account_tree,
+              color: iconColor,
+            ),
+            tooltip: 'Visualize Mind Map',
+          ),
+          const SizedBox(width: 8),
+          IconButton(
             onPressed: () {
               setState(() {
                 _showChat = !_showChat;
@@ -1122,5 +1134,89 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _generateMindMap() async {
+    if (_tutorial == null) return;
+
+    setState(() {
+      _isGeneratingMindMap = true;
+    });
+
+    try {
+      final mindMapJson = await aiService.generateMindMap(
+        widget.topic.title,
+        _tutorial!.summary,
+      );
+      final mindMapNode = MindMapNode.fromJson(mindMapJson);
+
+      setState(() {
+        _mindMapData = mindMapNode;
+        _isGeneratingMindMap = false;
+      });
+
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: MediaQuery.of(context).size.height * 0.8,
+            decoration: BoxDecoration(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.black.withOpacity(0.9)
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Mind Map: ${widget.topic.title}',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black87,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.close,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black87,
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: MindMapWidget(rootNode: mindMapNode),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _isGeneratingMindMap = false;
+      });
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to generate mind map: $e')),
+      );
+    }
   }
 }
