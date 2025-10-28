@@ -21,10 +21,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final VoiceService _voiceService = VoiceService();
   bool _isSending = false;
   bool _isLoading = true;
-  bool _isVoiceMode = false;
   bool _isSpeaking = false;
-  String _partialTranscript = '';
-  String? _currentlySpeakingMessageId;
 
   @override
   void initState() {
@@ -34,12 +31,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _initializeVoiceService() async {
-    await _voiceService.initialize();
+    await _voiceService.initializeTts();
     _voiceService.setOnSpeakComplete(() {
       if (mounted) {
         setState(() {
           _isSpeaking = false;
-          _currentlySpeakingMessageId = null;
         });
       }
     });
@@ -83,7 +79,6 @@ class _ChatScreenState extends State<ChatScreen> {
     await _voiceService.stop();
     setState(() {
       _isSpeaking = false;
-      _currentlySpeakingMessageId = null;
     });
   }
 
@@ -319,7 +314,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     minLines: 1,
                     maxLines: isDesktop ? 5 : 4,
                     decoration: InputDecoration(
-                      hintText: _isVoiceMode ? (_partialTranscript.isEmpty ? 'Listening...' : _partialTranscript) : 'Type a message...',
+                      hintText: 'Type a message...',
                       hintStyle: TextStyle(
                         color: Theme.of(context).brightness == Brightness.dark
                             ? Colors.white.withOpacity(0.5)
@@ -331,15 +326,13 @@ class _ChatScreenState extends State<ChatScreen> {
                         vertical: isDesktop ? 16 : 12,
                       ),
                     ),
-                    enabled: !_isSending && !_isVoiceMode,
+                    enabled: !_isSending,
                     onSubmitted: (_) => _handleSend(),
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          _buildVoiceButton(isDesktop),
           const SizedBox(width: 8),
           _buildSendButton(isDesktop),
         ],
@@ -372,83 +365,6 @@ class _ChatScreenState extends State<ChatScreen> {
             : Icon(Icons.send, size: isDesktop ? 24 : 20),
       ),
     );
-  }
-
-  Widget _buildVoiceButton(bool isDesktop) {
-    final double size = isDesktop ? 52 : 44;
-    return SizedBox(
-      height: size,
-      width: size,
-      child: ElevatedButton(
-        onPressed: _isSending ? null : _toggleVoiceMode,
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.zero,
-          backgroundColor: _isVoiceMode ? Colors.red : kAccentColor,
-          foregroundColor: Colors.white,
-          shape: const CircleBorder(),
-        ),
-        child: Icon(
-          _isVoiceMode ? Icons.mic : Icons.mic_none,
-          size: isDesktop ? 24 : 20,
-        ),
-      ),
-    );
-  }
-
-  Future<void> _toggleVoiceMode() async {
-    if (_isVoiceMode) {
-      await _voiceService.stopListening();
-      setState(() {
-        _isVoiceMode = false;
-        _partialTranscript = '';
-      });
-    } else {
-      final initialized = await _voiceService.initialize();
-      if (!initialized) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Voice recognition not available')),
-        );
-        return;
-      }
-
-      setState(() {
-        _isVoiceMode = true;
-      });
-
-      await _voiceService.startListening(
-        onResult: (text) {
-          if (mounted) {
-            setState(() {
-              _messageController.text = text;
-              _isVoiceMode = false;
-              _partialTranscript = '';
-            });
-            if (text.isNotEmpty) {
-              _handleSend();
-            }
-          }
-        },
-        onPartial: (text) {
-          if (mounted) {
-            setState(() {
-              _partialTranscript = text;
-            });
-          }
-        },
-        onError: (error) {
-          if (mounted) {
-            setState(() {
-              _isVoiceMode = false;
-              _partialTranscript = '';
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Voice error: $error')),
-            );
-          }
-        },
-      );
-    }
   }
 
   Future<void> _handleSend() async {

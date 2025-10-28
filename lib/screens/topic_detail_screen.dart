@@ -5,6 +5,7 @@ import '../models/topic_model.dart';
 import '../services/ai_service.dart';
 import '../services/visited_topics_service.dart';
 import '../services/learning_repository.dart';
+import '../services/voice_service.dart';
 import '../main.dart';
 import 'quiz_screen.dart';
 import '../services/ad_service.dart';
@@ -33,6 +34,8 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   final TextEditingController _chatController = TextEditingController();
   bool _isSendingMessage = false;
   final AdService _adService = AdService();
+  final VoiceService _voiceService = VoiceService();
+  bool _isSpeaking = false;
 
   void _showQuiz() async {
     if (_tutorial == null) return;
@@ -73,13 +76,51 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
     super.initState();
     _checkAndGenerateTutorial();
     _adService.loadInterstitialAd();
+    _initializeVoice();
+  }
+
+  Future<void> _initializeVoice() async {
+    await _voiceService.initializeTts();
+    _voiceService.setOnSpeakComplete(() {
+      if (mounted) {
+        setState(() {
+          _isSpeaking = false;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _chatController.dispose();
     _adService.dispose();
+    _voiceService.dispose();
     super.dispose();
+  }
+
+  Future<void> _speakText(String text) async {
+    if (_isSpeaking) {
+      await _voiceService.stop();
+      setState(() {
+        _isSpeaking = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isSpeaking = true;
+    });
+
+    try {
+      await _voiceService.speak(text);
+    } catch (e) {
+      debugPrint('TTS error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to read text')),
+        );
+      }
+    }
   }
 
   int _calculateProgressPercentage() {
@@ -615,13 +656,28 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              Text(
-                step.title,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      step.title,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      _isSpeaking ? Icons.stop_circle : Icons.volume_up,
+                      color: _isSpeaking ? Colors.red : kPrimaryColor,
+                      size: 24,
+                    ),
+                    onPressed: () => _speakText('${step.title}. ${step.content}'),
+                    tooltip: _isSpeaking ? 'Stop' : 'Listen',
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               Text(
@@ -806,13 +862,30 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                                 : borderColor,
                           ),
                         ),
-                        child: Text(
-                          message.content,
-                          style: TextStyle(
-                            color: textColor,
-                            fontSize: 14,
-                            height: 1.5,
-                          ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                message.content,
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 14,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ),
+                            if (!isUser)
+                              IconButton(
+                                icon: Icon(
+                                  _isSpeaking ? Icons.stop_circle : Icons.volume_up,
+                                  size: 16,
+                                  color: _isSpeaking ? Colors.red : kPrimaryColor,
+                                ),
+                                onPressed: () => _speakText(message.content),
+                                tooltip: _isSpeaking ? 'Stop' : 'Listen',
+                              ),
+                          ],
                         ),
                       ),
                     );
@@ -937,12 +1010,29 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                                 : isDark ? Colors.white.withOpacity(0.1) : Colors.grey[300],
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(
-                            message.content,
-                            style: TextStyle(
-                              color: isUser ? Colors.white : textColor,
-                              fontSize: 14,
-                            ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  message.content,
+                                  style: TextStyle(
+                                    color: isUser ? Colors.white : textColor,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                              if (!isUser)
+                                IconButton(
+                                  icon: Icon(
+                                    _isSpeaking ? Icons.stop_circle : Icons.volume_up,
+                                    size: 16,
+                                    color: _isSpeaking ? Colors.red : Colors.white70,
+                                  ),
+                                  onPressed: () => _speakText(message.content),
+                                  tooltip: _isSpeaking ? 'Stop' : 'Listen',
+                                ),
+                            ],
                           ),
                         ),
                       );
