@@ -415,9 +415,6 @@ class _ChatScreenState extends State<ChatScreen> {
           }
         }
 
-        if (!_isSpeaking) {
-          _speakResponse(reply);
-        }
       }
     } catch (e) {
       debugPrint('Chat error details: $e');
