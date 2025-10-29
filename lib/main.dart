@@ -51,7 +51,6 @@ Future<void> main() async {
   runApp(ProviderScope(child: const MyApp()));
 }
 
-// 🌈 THEME CONSTANTS
 const kPrimaryColor = Color(0xFFB366FF);
 const kAccentColor = Color(0xFFFF66B2);
 const kDarkGradient = [Color(0xFF1A0033), Color(0xFF2D0052), Color(0xFF1A0033)];
@@ -88,65 +87,64 @@ class MyApp extends ConsumerWidget {
 
   ThemeData _buildLightTheme() {
     return ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.light,
-        colorScheme: ColorScheme.light(
-          primary: kPrimaryColor,
-          secondary: kAccentColor,
-          surface: Colors.white,
-          error: Colors.red.shade400,
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: ColorScheme.light(
+        primary: kPrimaryColor,
+        secondary: kAccentColor,
+        surface: Colors.white,
+        error: Colors.red.shade400,
+      ),
+      scaffoldBackgroundColor: const Color(0xFFFAFAFA),
+      cardTheme: CardThemeData(
+        color: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.grey.shade200),
         ),
-        scaffoldBackgroundColor: const Color(0xFFFAFAFA),
-        cardTheme: CardThemeData(
-          color: Colors.white,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.black87),
+        titleTextStyle: TextStyle(
+          color: Colors.black87,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      textTheme: GoogleFonts.interTextTheme(
+        ThemeData(brightness: Brightness.light).textTheme,
+      ).apply(
+        bodyColor: Colors.black87,
+        displayColor: Colors.black87,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.grey.shade50,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: kPrimaryColor,
+          foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Colors.grey.shade200),
-          ),
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          iconTheme: IconThemeData(color: Colors.black87),
-          titleTextStyle: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        textTheme: GoogleFonts.interTextTheme(
-          ThemeData(brightness: Brightness.light).textTheme,
-        ).apply(
-          bodyColor: Colors.black87,
-          displayColor: Colors.black87,
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.grey.shade50,
-          border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade300),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: kPrimaryColor, width: 2),
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: kPrimaryColor,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
     );
@@ -162,7 +160,10 @@ class MyApp extends ConsumerWidget {
       ),
       textTheme: GoogleFonts.interTextTheme(
         ThemeData(brightness: Brightness.dark).textTheme,
-      ).apply(bodyColor: Colors.white, displayColor: Colors.white),
+      ).apply(
+        bodyColor: Colors.white,
+        displayColor: Colors.white,
+      ),
     );
   }
 }
@@ -233,7 +234,6 @@ class LaunchDecider extends StatelessWidget {
   }
 }
 
-// 🔒 AUTH GATE: Listens to FirebaseAuth to decide screen
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -274,5 +274,3 @@ class _Splash extends StatelessWidget {
     );
   }
 }
-
-// Keep all the remaining code from your original main.dart file
