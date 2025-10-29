@@ -7,7 +7,6 @@ import '../main.dart';
 import '../services/firestore_service.dart';
 import '../services/visited_topics_service.dart';
 import '../services/notification_service.dart';
-import '../services/topic_upload_service.dart';
 import '../providers/theme_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -19,9 +18,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final FirestoreService _firestoreService = FirestoreService();
-  final TopicUploadService _uploadService = TopicUploadService();
   bool _isLoading = true;
-  bool _isUploading = false;
   Map<String, dynamic> _stats = {};
 
   @override
@@ -107,127 +104,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
-  Future<void> _uploadTopics() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white.withOpacity(0.95),
-        title: const Text('Upload Topics'),
-        content: const Text(
-          'This will upload all topics from topics_data.json to Firestore. Continue?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: kPrimaryColor),
-            child: const Text('Upload'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
-
-    setState(() => _isUploading = true);
-
-    try {
-      final result = await _uploadService.uploadTopicsFromJson();
-
-      if (!mounted) return;
-
-      if (result.isSuccess) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: Colors.white.withOpacity(0.95),
-            title: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.green),
-                const SizedBox(width: 8),
-                const Text('Upload Complete'),
-              ],
-            ),
-            content: Text(
-              'Successfully uploaded ${result.successCount} topics!',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      } else if (result.hasErrors) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: Colors.white.withOpacity(0.95),
-            title: Row(
-              children: [
-                const Icon(Icons.warning, color: Colors.orange),
-                const SizedBox(width: 8),
-                const Text('Upload Completed with Errors'),
-              ],
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Success: ${result.successCount}'),
-                  Text('Failed: ${result.failCount}'),
-                  const SizedBox(height: 8),
-                  if (result.errors.isNotEmpty) ...[
-                    const Text('Errors:', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    ...result.errors.map((e) => Text('• $e', style: const TextStyle(fontSize: 12))),
-                  ],
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: Colors.white.withOpacity(0.95),
-            title: Row(
-              children: [
-                const Icon(Icons.error, color: Colors.red),
-                const SizedBox(width: 8),
-                const Text('Upload Failed'),
-              ],
-            ),
-            content: Text('Error: $e'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isUploading = false);
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -498,33 +374,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   color: textColor.withOpacity(0.5),
                 ),
                 onTap: _loadUserStats,
-              ),
-              Divider(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white12
-                    : Colors.black12,
-                height: 1,
-              ),
-              ListTile(
-                leading: Icon(Icons.upload_file, color: kPrimaryColor),
-                title: Text(
-                  'Upload Topics to Firestore',
-                  style: TextStyle(color: textColor),
-                ),
-                trailing: _isUploading
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: kPrimaryColor,
-                        ),
-                      )
-                    : Icon(
-                        Icons.chevron_right,
-                        color: textColor.withOpacity(0.5),
-                      ),
-                onTap: _isUploading ? null : _uploadTopics,
               ),
               Divider(
                 color: Theme.of(context).brightness == Brightness.dark
