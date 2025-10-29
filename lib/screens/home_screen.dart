@@ -1095,7 +1095,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: 180,
+              height: 200,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: recommendedTopics.length,
