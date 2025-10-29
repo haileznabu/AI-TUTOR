@@ -94,7 +94,6 @@ class MyApp extends ConsumerWidget {
           primary: kPrimaryColor,
           secondary: kAccentColor,
           surface: Colors.white,
-          background: const Color(0xFFFAFAFA),
           error: Colors.red.shade400,
         ),
         scaffoldBackgroundColor: const Color(0xFFFAFAFA),
