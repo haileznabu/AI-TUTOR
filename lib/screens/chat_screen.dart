@@ -250,30 +250,13 @@ class _ChatScreenState extends State<ChatScreen> {
                         : Colors.white.withOpacity(0.15),
                     ),
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          message.content,
-                          style: TextStyle(
-                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
-                            fontSize: isDesktop ? 15 : 14,
-                            height: 1.5,
-                          ),
-                        ),
-                      ),
-                      if (!isUser)
-                        IconButton(
-                          icon: Icon(
-                            _isSpeaking ? Icons.stop_circle : Icons.volume_up,
-                            size: 20,
-                            color: _isSpeaking ? Colors.red : Colors.white70,
-                          ),
-                          onPressed: () => _isSpeaking ? _stopSpeaking() : _speakResponse(message.content),
-                          tooltip: _isSpeaking ? 'Stop' : 'Listen',
-                        ),
-                    ],
+                  child: Text(
+                    message.content,
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+                      fontSize: isDesktop ? 15 : 14,
+                      height: 1.5,
+                    ),
                   ),
                 ),
               ),
