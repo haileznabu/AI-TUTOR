@@ -467,14 +467,16 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
       final topics = await _firestoreService.getAllTopics();
       if (mounted) {
         setState(() {
-          _allTopics = topics;
+          _allTopics = topics.isNotEmpty ? topics : List<Topic>.from(_fallbackTopics);
           _isLoading = false;
         });
       }
     } catch (e) {
-      debugPrint('Error loading topics: $e');
+      debugPrint('Error loading topics from Firestore: $e');
+      debugPrint('Using fallback topics instead');
       if (mounted) {
         setState(() {
+          _allTopics = List<Topic>.from(_fallbackTopics);
           _isLoading = false;
         });
       }
@@ -980,21 +982,21 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
   ];
 
   Map<String, Topic> get _idToTopic {
-    final topics = _allTopics.isEmpty ? _fallbackTopics : _allTopics;
+    final topics = _allTopics.isNotEmpty ? _allTopics : _fallbackTopics;
     return {
       for (final t in topics) t.id: t,
     };
   }
 
   List<String> get _allCategories {
-    final topics = _allTopics.isEmpty ? _fallbackTopics : _allTopics;
+    final topics = _allTopics.isNotEmpty ? _allTopics : _fallbackTopics;
     final set = <String>{ for (final t in topics) t.category };
     final list = set.toList()..sort();
     return list;
   }
 
   List<Topic> get _filteredTopics {
-    final topics = _allTopics.isEmpty ? _fallbackTopics : _allTopics;
+    final topics = _allTopics.isNotEmpty ? _allTopics : _fallbackTopics;
     Iterable<Topic> base = topics;
     if (_selectedCategory != null) {
       base = base.where((t) => t.category == _selectedCategory);
@@ -1265,7 +1267,9 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
         final Set<String> visitedCategories = visitedTopics.map((t) => t.category).toSet();
         final Set<String> visitedIds = ids.toSet();
 
-        List<Topic> recommendedTopics = _allTopics
+        final availableTopics = _allTopics.isNotEmpty ? _allTopics : _fallbackTopics;
+
+        List<Topic> recommendedTopics = availableTopics
             .where((topic) =>
                 !visitedIds.contains(topic.id) &&
                 visitedCategories.contains(topic.category))
@@ -1273,7 +1277,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
             .toList();
 
         if (recommendedTopics.isEmpty) {
-          recommendedTopics = _allTopics
+          recommendedTopics = availableTopics
               .where((topic) => !visitedIds.contains(topic.id))
               .take(6)
               .toList();

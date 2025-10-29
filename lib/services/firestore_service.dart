@@ -359,12 +359,20 @@ class FirestoreService {
     try {
       final snapshot = await _firestore
           .collection('topics')
-          .orderBy('createdAt', descending: true)
           .get();
 
-      return snapshot.docs
+      final topics = snapshot.docs
           .map((doc) => Topic.fromFirestore(doc.data()))
           .toList();
+
+      topics.sort((a, b) {
+        if (a.createdAt == null && b.createdAt == null) return 0;
+        if (a.createdAt == null) return 1;
+        if (b.createdAt == null) return -1;
+        return b.createdAt!.compareTo(a.createdAt!);
+      });
+
+      return topics;
     } catch (e) {
       throw Exception('Failed to get topics: $e');
     }
@@ -373,11 +381,21 @@ class FirestoreService {
   Stream<List<Topic>> getTopicsStream() {
     return _firestore
         .collection('topics')
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Topic.fromFirestore(doc.data()))
-            .toList());
+        .map((snapshot) {
+          final topics = snapshot.docs
+              .map((doc) => Topic.fromFirestore(doc.data()))
+              .toList();
+
+          topics.sort((a, b) {
+            if (a.createdAt == null && b.createdAt == null) return 0;
+            if (a.createdAt == null) return 1;
+            if (b.createdAt == null) return -1;
+            return b.createdAt!.compareTo(a.createdAt!);
+          });
+
+          return topics;
+        });
   }
 
   Future<Topic?> getTopicById(String topicId) async {
