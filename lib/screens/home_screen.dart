@@ -1095,7 +1095,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: 200,
+              height: 220,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: recommendedTopics.length,
@@ -1599,22 +1599,23 @@ class _RecommendedTopicCard extends StatelessWidget {
                 onTap: onTap,
                 borderRadius: BorderRadius.circular(16),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Row(
                         children: [
                           Container(
-                            width: 48,
-                            height: 48,
+                            width: 44,
+                            height: 44,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [kPrimaryColor, kAccentColor],
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Icon(topic.icon, color: Colors.white, size: 24),
+                            child: Icon(topic.icon, color: Colors.white, size: 22),
                           ),
                           const Spacer(),
                           Container(
@@ -1637,7 +1638,7 @@ class _RecommendedTopicCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       Text(
                         'Subject: ${topic.category}',
                         style: TextStyle(
@@ -1646,33 +1647,35 @@ class _RecommendedTopicCard extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Text(
                         'Lesson: ${topic.title}',
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black87,
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        topic.description,
-                        style: TextStyle(
-                          color: isDark ? Colors.white.withOpacity(0.7) : Colors.grey.shade700,
-                          fontSize: 12,
+                      const SizedBox(height: 6),
+                      Flexible(
+                        child: Text(
+                          topic.description,
+                          style: TextStyle(
+                            color: isDark ? Colors.white.withOpacity(0.7) : Colors.grey.shade700,
+                            fontSize: 11,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      const Spacer(),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
                           Icon(
                             Icons.access_time,
-                            size: 14,
+                            size: 13,
                             color: isDark ? Colors.white.withOpacity(0.6) : Colors.grey,
                           ),
                           const SizedBox(width: 4),
