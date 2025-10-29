@@ -16,6 +16,7 @@ import '../services/visited_topics_service.dart';
 import '../services/firestore_service.dart';
 import '../services/notification_service.dart';
 import '../widgets/banner_ad_widget.dart';
+import '../widgets/shimmer_loading_widgets.dart';
 
 // 🏠 HOME
 class HomeScreen extends ConsumerStatefulWidget {
@@ -1045,25 +1046,28 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: CircularProgressIndicator(color: kPrimaryColor),
-        ),
-      );
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSearchBar(context),
-        _buildCategoryChips(context),
-        _buildRecentlyVisited(context),
-        _buildRecommendedForYou(context),
-        _buildTopicsList(context),
+        if (_isLoading) ..._buildShimmerLoading(context)
+        else ...[
+          _buildCategoryChips(context),
+          _buildRecentlyVisited(context),
+          _buildRecommendedForYou(context),
+          _buildTopicsList(context),
+        ],
       ],
     );
+  }
+
+  List<Widget> _buildShimmerLoading(BuildContext context) {
+    return [
+      _buildCategoryChips(context),
+      const ShimmerContinueLearningLoader(),
+      const ShimmerRecommendedLoader(),
+      const ShimmerTopicsListLoader(),
+    ];
   }
   Widget _buildSearchBar(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1173,7 +1177,8 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
       future: _loadRecentlyVisitedWithProgress(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const SizedBox.shrink();
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          return ShimmerContinueLearningLoader();
         }
         final ids = snapshot.data![0] as List<String>;
         final progressMap = snapshot.data![1] as Map<String, int>;
@@ -1250,7 +1255,8 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
       future: _loadRecentlyVisitedWithProgress(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const SizedBox.shrink();
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          return ShimmerRecommendedLoader();
         }
         final ids = snapshot.data![0] as List<String>;
         final progressMap = snapshot.data![1] as Map<String, int>;
