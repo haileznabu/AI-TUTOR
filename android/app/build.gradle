@@ -20,10 +20,11 @@ android {
 
     defaultConfig {
         applicationId "com.example.ai_tutor"
-        minSdk flutter.minSdkVersion
+        minSdk 21
         targetSdk flutter.targetSdkVersion
         versionCode flutter.versionCode
         versionName flutter.versionName
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -44,5 +45,6 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:33.5.1')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-messaging-ktx'
     implementation 'com.google.android.gms:play-services-auth:20.7.0'
 }

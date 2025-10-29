@@ -14,6 +14,7 @@ import 'screens/onboarding_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/auth_screen.dart';
 import 'services/ad_service.dart';
+import 'services/notification_service.dart';
 import 'providers/theme_provider.dart';
 
 Future<void> main() async {
@@ -40,6 +41,12 @@ Future<void> main() async {
   AdService.initialize().catchError((e) {
     debugPrint('Ad service initialization error: $e');
   });
+
+  if (!kIsWeb) {
+    NotificationService().initialize().catchError((e) {
+      debugPrint('Notification service initialization error: $e');
+    });
+  }
 
   runApp(ProviderScope(child: const MyApp()));
 }

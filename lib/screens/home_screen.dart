@@ -13,6 +13,7 @@ import '../models/topic_model.dart';
 import 'topic_detail_screen.dart';
 import '../services/visited_topics_service.dart';
 import '../services/firestore_service.dart';
+import '../services/notification_service.dart';
 import '../widgets/banner_ad_widget.dart';
 
 // 🏠 HOME
@@ -31,6 +32,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   )..forward();
 
   final StateProvider<int> _navIndexProvider = StateProvider<int>((ref) => 0);
+  bool _hasRequestedNotificationPermission = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _requestNotificationPermission();
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    if (_hasRequestedNotificationPermission || kIsWeb) return;
+
+    _hasRequestedNotificationPermission = true;
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    final notificationService = NotificationService();
+    final hasPermission = await notificationService.requestPermission();
+
+    if (hasPermission) {
+      await notificationService.subscribeToTopic('all_users');
+      debugPrint('Notification permission granted');
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Enable notifications to get learning reminders'),
+          action: SnackBarAction(
+            label: 'Enable',
+            onPressed: () {
+              notificationService.requestPermission();
+            },
+          ),
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    }
+  }
 
   Future<void> _signOut(BuildContext context) async {
     await VisitedTopicsService.clearAll();

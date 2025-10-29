@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
 import '../main.dart';
 import '../services/firestore_service.dart';
 import '../services/visited_topics_service.dart';
+import '../services/notification_service.dart';
 import '../providers/theme_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -390,6 +392,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 onTap: _clearLocalData,
               ),
+              if (!kIsWeb) ...[
+                Divider(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white12
+                      : Colors.black12,
+                  height: 1,
+                ),
+                ListTile(
+                  leading: Icon(Icons.notifications, color: textColor),
+                  title: Text(
+                    'Test Notification',
+                    style: TextStyle(color: textColor),
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: textColor.withOpacity(0.5),
+                  ),
+                  onTap: () async {
+                    await NotificationService().sendTestNotification();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Test notification sent'),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
             ],
           ),
         ),
