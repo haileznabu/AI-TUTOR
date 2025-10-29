@@ -393,35 +393,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 onTap: _clearLocalData,
               ),
-              if (!kIsWeb) ...[
-                Divider(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white12
-                      : Colors.black12,
-                  height: 1,
-                ),
-                ListTile(
-                  leading: Icon(Icons.notifications, color: textColor),
-                  title: Text(
-                    'Test Notification',
-                    style: TextStyle(color: textColor),
-                  ),
-                  trailing: Icon(
-                    Icons.chevron_right,
-                    color: textColor.withOpacity(0.5),
-                  ),
-                  onTap: () async {
-                    await NotificationService().sendTestNotification();
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Test notification sent'),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ],
             ],
           ),
         ),
