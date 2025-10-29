@@ -2,25 +2,31 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 class VoiceService {
-  final FlutterTts _flutterTts = FlutterTts();
+  FlutterTts? _flutterTts;
   bool _isTtsInitialized = false;
   VoidCallback? _onSpeakComplete;
 
   Future<bool> initializeTts() async {
-    if (_isTtsInitialized) return true;
+    if (_isTtsInitialized && _flutterTts != null) return true;
 
     try {
-      await _flutterTts.setLanguage('en-US');
-      await _flutterTts.setSpeechRate(0.5);
-      await _flutterTts.setVolume(1.0);
-      await _flutterTts.setPitch(1.0);
+      _flutterTts = FlutterTts();
 
-      _flutterTts.setCompletionHandler(() {
+      await _flutterTts!.setLanguage('en-US');
+      await _flutterTts!.setSpeechRate(0.5);
+      await _flutterTts!.setVolume(1.0);
+      await _flutterTts!.setPitch(1.0);
+
+      _flutterTts!.setCompletionHandler(() {
         _onSpeakComplete?.call();
       });
 
-      _flutterTts.setErrorHandler((msg) {
+      _flutterTts!.setErrorHandler((msg) {
         debugPrint('TTS error: $msg');
+        _onSpeakComplete?.call();
+      });
+
+      _flutterTts!.setCancelHandler(() {
         _onSpeakComplete?.call();
       });
 
@@ -28,6 +34,8 @@ class VoiceService {
       return true;
     } catch (e) {
       debugPrint('TTS initialization error: $e');
+      _isTtsInitialized = false;
+      _flutterTts = null;
       return false;
     }
   }
@@ -37,22 +45,39 @@ class VoiceService {
   }
 
   Future<void> speak(String text) async {
-    if (!_isTtsInitialized) {
+    if (!_isTtsInitialized || _flutterTts == null) {
       final initialized = await initializeTts();
-      if (!initialized) {
+      if (!initialized || _flutterTts == null) {
         throw Exception('TTS not available');
       }
     }
 
-    await _flutterTts.stop();
-    await _flutterTts.speak(text);
+    try {
+      await _flutterTts!.stop();
+      await _flutterTts!.speak(text);
+    } catch (e) {
+      debugPrint('TTS speak error: $e');
+      rethrow;
+    }
   }
 
   Future<void> stop() async {
-    await _flutterTts.stop();
+    if (_flutterTts != null) {
+      try {
+        await _flutterTts!.stop();
+      } catch (e) {
+        debugPrint('TTS stop error: $e');
+      }
+    }
   }
 
   void dispose() {
-    _flutterTts.stop();
+    if (_flutterTts != null) {
+      try {
+        _flutterTts!.stop();
+      } catch (e) {
+        debugPrint('TTS dispose error: $e');
+      }
+    }
   }
 }

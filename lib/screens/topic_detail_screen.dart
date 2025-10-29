@@ -80,14 +80,18 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   }
 
   Future<void> _initializeVoice() async {
-    await _voiceService.initializeTts();
-    _voiceService.setOnSpeakComplete(() {
-      if (mounted) {
-        setState(() {
-          _isSpeaking = false;
-        });
-      }
-    });
+    try {
+      await _voiceService.initializeTts();
+      _voiceService.setOnSpeakComplete(() {
+        if (mounted) {
+          setState(() {
+            _isSpeaking = false;
+          });
+        }
+      });
+    } catch (e) {
+      debugPrint('Voice initialization failed: $e');
+    }
   }
 
   @override
