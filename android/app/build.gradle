@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.ai_tutor"
-        minSdk 23
+        minSdkVersion flutter.minSdkVersion
         targetSdk flutter.targetSdkVersion
         versionCode flutter.versionCode
         versionName flutter.versionName
