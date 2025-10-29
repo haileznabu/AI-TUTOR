@@ -7,23 +7,43 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
     _loadTheme();
   }
 
+  SharedPreferences? _prefsCache;
+  bool _isLoading = false;
+
+  Future<SharedPreferences> _getPrefs() async {
+    _prefsCache ??= await SharedPreferences.getInstance();
+    return _prefsCache!;
+  }
+
   Future<void> _loadTheme() async {
+    if (_isLoading) return;
+    _isLoading = true;
+
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _getPrefs();
       final isDark = prefs.getBool('isDarkMode') ?? true;
-      state = isDark ? ThemeMode.dark : ThemeMode.light;
+      if (mounted) {
+        state = isDark ? ThemeMode.dark : ThemeMode.light;
+      }
     } catch (e) {
       debugPrint('Error loading theme: $e');
-      state = ThemeMode.dark;
+      if (mounted) {
+        state = ThemeMode.dark;
+      }
+    } finally {
+      _isLoading = false;
     }
   }
 
   Future<void> toggleTheme() async {
     try {
       final newMode = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-      state = newMode;
 
-      final prefs = await SharedPreferences.getInstance();
+      if (mounted) {
+        state = newMode;
+      }
+
+      final prefs = await _getPrefs();
       await prefs.setBool('isDarkMode', newMode == ThemeMode.dark);
     } catch (e) {
       debugPrint('Error toggling theme: $e');

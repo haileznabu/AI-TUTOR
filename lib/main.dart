@@ -62,11 +62,25 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
 
-    return MaterialApp(
-      title: 'AI-Tutor-Main',
-      debugShowCheckedModeBanner: false,
-      themeMode: themeMode,
-      theme: ThemeData(
+    return AnimatedTheme(
+      data: themeMode == ThemeMode.dark ? _buildDarkTheme() : _buildLightTheme(),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      child: Builder(
+        builder: (context) => MaterialApp(
+          title: 'AI-Tutor-Main',
+          debugShowCheckedModeBanner: false,
+          themeMode: themeMode,
+          theme: _buildLightTheme(),
+          darkTheme: _buildDarkTheme(),
+          home: const LaunchDecider(),
+        ),
+      ),
+    );
+  }
+
+  ThemeData _buildLightTheme() {
+    return ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
         colorScheme: ColorScheme.light(
@@ -129,18 +143,20 @@ class MyApp extends ConsumerWidget {
           ),
         ),
       ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
+    );
+  }
+
+  ThemeData _buildDarkTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: kPrimaryColor,
         brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: kPrimaryColor,
-          brightness: Brightness.dark,
-        ),
-        textTheme: GoogleFonts.interTextTheme(
-          ThemeData(brightness: Brightness.dark).textTheme,
-        ).apply(bodyColor: Colors.white, displayColor: Colors.white),
       ),
-      home: const LaunchDecider(),
+      textTheme: GoogleFonts.interTextTheme(
+        ThemeData(brightness: Brightness.dark).textTheme,
+      ).apply(bodyColor: Colors.white, displayColor: Colors.white),
     );
   }
 }

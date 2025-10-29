@@ -75,7 +75,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     if (isDesktop) {
       return Scaffold(
-        body: Container(
+        body: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
           decoration: BoxDecoration(
             gradient: isDark ? const LinearGradient(
               begin: Alignment.topLeft,
@@ -102,7 +104,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     return Scaffold(
       extendBody: true,
-      body: Container(
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
         decoration: BoxDecoration(
           gradient: isDark ? const LinearGradient(
             begin: Alignment.topLeft,
@@ -1822,7 +1826,9 @@ class GlassCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(borderRadius),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
           padding: padding,
           decoration: BoxDecoration(
             color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
@@ -1883,7 +1889,9 @@ class _DesktopSideNav extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(userProfileProvider);
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
       width: 280,
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.2),
@@ -2112,7 +2120,9 @@ class _GlassNavBar extends ConsumerWidget {
       borderRadius: BorderRadius.circular(18),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
           decoration: BoxDecoration(
             color: isDark ? Colors.white.withOpacity(0.06) : Colors.white,
             borderRadius: BorderRadius.circular(18),
