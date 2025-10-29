@@ -343,4 +343,79 @@ class FirestoreService {
       throw Exception('Failed to get Gemini API key: $e');
     }
   }
+
+  Future<void> addTopic(Topic topic) async {
+    try {
+      await _firestore
+          .collection('topics')
+          .doc(topic.id)
+          .set(topic.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to add topic: $e');
+    }
+  }
+
+  Future<List<Topic>> getAllTopics() async {
+    try {
+      final snapshot = await _firestore
+          .collection('topics')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => Topic.fromFirestore(doc.data()))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get topics: $e');
+    }
+  }
+
+  Stream<List<Topic>> getTopicsStream() {
+    return _firestore
+        .collection('topics')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Topic.fromFirestore(doc.data()))
+            .toList());
+  }
+
+  Future<Topic?> getTopicById(String topicId) async {
+    try {
+      final doc = await _firestore
+          .collection('topics')
+          .doc(topicId)
+          .get();
+
+      if (!doc.exists) {
+        return null;
+      }
+
+      return Topic.fromFirestore(doc.data()!);
+    } catch (e) {
+      throw Exception('Failed to get topic: $e');
+    }
+  }
+
+  Future<void> updateTopic(Topic topic) async {
+    try {
+      await _firestore
+          .collection('topics')
+          .doc(topic.id)
+          .update(topic.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to update topic: $e');
+    }
+  }
+
+  Future<void> deleteTopic(String topicId) async {
+    try {
+      await _firestore
+          .collection('topics')
+          .doc(topicId)
+          .delete();
+    } catch (e) {
+      throw Exception('Failed to delete topic: $e');
+    }
+  }
 }

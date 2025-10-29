@@ -1,0 +1,55 @@
+// Firestore Security Rules for AI Tutor App
+// Copy these rules to your Firebase Console → Firestore Database → Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Topics Collection - Read-only for all authenticated users
+    match /topics/{topicId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admins can write via Firebase Console
+    }
+
+    // User-specific data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // User progress subcollection
+      match /progress/{progressId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Visited topics subcollection
+      match /visitedTopics/{topicId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Tutorials subcollection
+      match /tutorials/{tutorialId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Quizzes subcollection
+      match /quizzes/{quizId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Quiz results subcollection
+      match /quizResults/{resultId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Chat messages subcollection
+      match /chatMessages/{messageId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Config collection - Read-only
+    match /config/{configId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admins can write via Firebase Console
+    }
+  }
+}

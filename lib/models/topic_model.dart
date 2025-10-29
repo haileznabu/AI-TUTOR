@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 @immutable
 class Topic {
@@ -9,6 +10,7 @@ class Topic {
   final IconData icon;
   final int estimatedMinutes;
   final String difficulty;
+  final DateTime? createdAt;
 
   const Topic({
     required this.id,
@@ -18,7 +20,38 @@ class Topic {
     required this.icon,
     required this.estimatedMinutes,
     required this.difficulty,
+    this.createdAt,
   });
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'category': category,
+      'iconCodePoint': icon.codePoint,
+      'iconFontFamily': icon.fontFamily,
+      'estimatedMinutes': estimatedMinutes,
+      'difficulty': difficulty,
+      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
+    };
+  }
+
+  factory Topic.fromFirestore(Map<String, dynamic> data) {
+    return Topic(
+      id: data['id'] as String,
+      title: data['title'] as String,
+      description: data['description'] as String,
+      category: data['category'] as String,
+      icon: IconData(
+        data['iconCodePoint'] as int,
+        fontFamily: data['iconFontFamily'] as String?,
+      ),
+      estimatedMinutes: data['estimatedMinutes'] as int,
+      difficulty: data['difficulty'] as String,
+      createdAt: data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : null,
+    );
+  }
 }
 
 @immutable

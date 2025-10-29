@@ -451,9 +451,37 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String? _selectedCategory;
-  final Map<String, bool> _expandedCategories = {}; // null = All
+  final Map<String, bool> _expandedCategories = {};
+  final FirestoreService _firestoreService = FirestoreService();
+  List<Topic> _allTopics = [];
+  bool _isLoading = true;
 
-  static const List<Topic> _allTopics = [
+  @override
+  void initState() {
+    super.initState();
+    _loadTopics();
+  }
+
+  Future<void> _loadTopics() async {
+    try {
+      final topics = await _firestoreService.getAllTopics();
+      if (mounted) {
+        setState(() {
+          _allTopics = topics;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading topics: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  static const List<Topic> _fallbackTopics = [
     Topic(
       id: '1',
       title: 'Flutter Basics',
@@ -951,18 +979,23 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
     ),
   ];
 
-  static final Map<String, Topic> _idToTopic = {
-    for (final t in _allTopics) t.id: t,
-  };
+  Map<String, Topic> get _idToTopic {
+    final topics = _allTopics.isEmpty ? _fallbackTopics : _allTopics;
+    return {
+      for (final t in topics) t.id: t,
+    };
+  }
 
   List<String> get _allCategories {
-    final set = <String>{ for (final t in _allTopics) t.category };
+    final topics = _allTopics.isEmpty ? _fallbackTopics : _allTopics;
+    final set = <String>{ for (final t in topics) t.category };
     final list = set.toList()..sort();
     return list;
   }
 
   List<Topic> get _filteredTopics {
-    Iterable<Topic> base = _allTopics;
+    final topics = _allTopics.isEmpty ? _fallbackTopics : _allTopics;
+    Iterable<Topic> base = topics;
     if (_selectedCategory != null) {
       base = base.where((t) => t.category == _selectedCategory);
     }
@@ -982,9 +1015,8 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
 
     if (userId != null) {
       try {
-        final firestoreService = FirestoreService();
-        final firestoreProgressMap = await firestoreService.getUserProgress(userId);
-        final firestoreTopics = await firestoreService.getVisitedTopics(userId);
+        final firestoreProgressMap = await _firestoreService.getUserProgress(userId);
+        final firestoreTopics = await _firestoreService.getVisitedTopics(userId);
 
         for (final topicId in firestoreTopics) {
           final progress = firestoreProgressMap[topicId] ?? 0;
@@ -1011,6 +1043,15 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: CircularProgressIndicator(color: kPrimaryColor),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
