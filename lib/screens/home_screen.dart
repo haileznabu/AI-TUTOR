@@ -146,8 +146,9 @@ class _HomeTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool isDesktop = MediaQuery.of(context).size.width > 800;
+    final bool isWideDesktop = MediaQuery.of(context).size.width > 1400;
 
-    final double maxWidth = isDesktop ? 1200 : double.infinity;
+    final double maxWidth = isWideDesktop ? 1400 : (isDesktop ? 1200 : double.infinity);
     final EdgeInsets padding = isDesktop
       ? const EdgeInsets.symmetric(horizontal: 48, vertical: 32)
       : const EdgeInsets.symmetric(horizontal: 16, vertical: 20);
@@ -165,10 +166,12 @@ class _HomeTab extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (isDesktop) _DesktopHeader(onSignOut: onSignOut),
+                  if (isDesktop) const SizedBox(height: 32),
                   if (!isDesktop) _PersonalizedHeader(onSignOut: onSignOut),
                   if (!isDesktop) const SizedBox(height: 20),
                   const BannerAdWidget(),
-                  if (!isDesktop) const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   const _AiTopicExplorer(),
                 ],
               ),
@@ -228,6 +231,96 @@ class _PersonalizedHeader extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _DesktopHeader extends StatelessWidget {
+  final VoidCallback onSignOut;
+  const _DesktopHeader({required this.onSignOut});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final userName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
+    final now = DateTime.now();
+    final dateStr = DateFormat('EEEE, MMMM d, y • h:mm a').format(now);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.white.withOpacity(0.05) : Colors.white.withOpacity(0.7),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [kPrimaryColor, kAccentColor],
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    userName[0].toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome back, $userName!',
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 16,
+                          color: textColor.withOpacity(0.6),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          dateStr,
+                          style: TextStyle(
+                            color: textColor.withOpacity(0.6),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

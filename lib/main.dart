@@ -18,10 +18,12 @@ import 'providers/theme_provider.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  try {
-    await dotenv.load(fileName: ".env");
-  } catch (e) {
-    debugPrint('Warning: .env file not found or error loading it: $e');
+  if (!kIsWeb) {
+    try {
+      await dotenv.load(fileName: ".env");
+    } catch (e) {
+      debugPrint('Warning: .env file not found or error loading it: $e');
+    }
   }
 
   try {
@@ -34,7 +36,9 @@ Future<void> main() async {
     rethrow;
   }
 
-  await AdService.initialize();
+  AdService.initialize().catchError((e) {
+    debugPrint('Ad service initialization error: $e');
+  });
 
   runApp(ProviderScope(child: const MyApp()));
 }
