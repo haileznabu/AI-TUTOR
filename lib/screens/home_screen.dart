@@ -809,6 +809,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
         _buildSearchBar(context),
         _buildCategoryChips(context),
         _buildRecentlyVisited(context),
+        _buildRecommendedForYou(context),
         _buildTopicsList(context),
       ],
     );
@@ -838,7 +839,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
               controller: _searchController,
               style: TextStyle(color: isDark ? Colors.white : Colors.black87),
               decoration: InputDecoration(
-                hintText: 'Search topics...',
+                hintText: 'Search lessons or topics...',
                 hintStyle: TextStyle(color: isDark ? Colors.white.withOpacity(0.5) : Colors.grey),
                 prefixIcon: Icon(Icons.search, color: isDark ? Colors.white70 : Colors.grey),
                 border: InputBorder.none,
@@ -945,7 +946,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
                   const Icon(Icons.history, color: kPrimaryColor, size: 20),
                   const SizedBox(width: 8),
                   Text(
-                    'Recently visited',
+                    'Continue Learning',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                           fontWeight: FontWeight.bold,
@@ -983,6 +984,139 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
                 },
               ),
             ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildRecommendedForYou(BuildContext context) {
+    if (_searchQuery.isNotEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return FutureBuilder<List<dynamic>>(
+      future: _loadRecentlyVisitedWithProgress(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
+        final ids = snapshot.data![0] as List<String>;
+        final progressMap = snapshot.data![1] as Map<String, int>;
+
+        if (ids.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final List<Topic> visitedTopics = ids
+            .map((id) => _idToTopic[id])
+            .whereType<Topic>()
+            .toList();
+
+        final Set<String> visitedCategories = visitedTopics.map((t) => t.category).toSet();
+        final Set<String> visitedIds = ids.toSet();
+
+        List<Topic> recommendedTopics = _allTopics
+            .where((topic) =>
+                !visitedIds.contains(topic.id) &&
+                visitedCategories.contains(topic.category))
+            .take(6)
+            .toList();
+
+        if (recommendedTopics.isEmpty) {
+          recommendedTopics = _allTopics
+              .where((topic) => !visitedIds.contains(topic.id))
+              .take(6)
+              .toList();
+        }
+
+        if (recommendedTopics.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 8),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [kPrimaryColor, kAccentColor],
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.stars, color: Colors.white, size: 16),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Recommended for You',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: kAccentColor.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.auto_awesome, color: kAccentColor, size: 12),
+                        SizedBox(width: 4),
+                        Text(
+                          'AI Powered',
+                          style: TextStyle(
+                            color: kAccentColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              'Based on your learning progress and interests',
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.6)
+                    : Colors.grey.shade600,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 180,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: recommendedTopics.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                itemBuilder: (context, index) {
+                  final topic = recommendedTopics[index];
+                  return _RecommendedTopicCard(
+                    topic: topic,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TopicDetailScreen(topic: topic),
+                        ),
+                      ).then((_) => setState(() {}));
+                    },
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
           ],
         );
       },
@@ -1125,7 +1259,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
               const Icon(Icons.view_list, color: kPrimaryColor, size: 20),
               const SizedBox(width: 8),
               Text(
-                _selectedCategory == null ? 'All categories' : _selectedCategory!,
+                _selectedCategory == null ? 'All Subjects' : _selectedCategory!,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                       fontWeight: FontWeight.bold,
@@ -1219,11 +1353,20 @@ class _TopicCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              topic.title,
+                              'Lesson: ${topic.title}',
                               style: TextStyle(
                                 color: isDark ? Colors.white : Colors.black87,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Subject: ${topic.category}',
+                              style: TextStyle(
+                                color: kPrimaryColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -1399,6 +1542,160 @@ class _VisitedTopicTile extends StatelessWidget {
                 ],
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RecommendedTopicCard extends StatelessWidget {
+  final Topic topic;
+  final VoidCallback onTap;
+
+  const _RecommendedTopicCard({required this.topic, required this.onTap});
+
+  Color get _difficultyColor {
+    switch (topic.difficulty.toLowerCase()) {
+      case 'beginner':
+        return Colors.green;
+      case 'intermediate':
+        return Colors.orange;
+      case 'advanced':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return SizedBox(
+      width: 260,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  kPrimaryColor.withOpacity(0.15),
+                  kAccentColor.withOpacity(0.15),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.white.withOpacity(0.2) : kPrimaryColor.withOpacity(0.3),
+                width: 1.5,
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [kPrimaryColor, kAccentColor],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(topic.icon, color: Colors.white, size: 24),
+                          ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _difficultyColor.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: _difficultyColor.withOpacity(0.5),
+                              ),
+                            ),
+                            child: Text(
+                              topic.difficulty,
+                              style: TextStyle(
+                                color: _difficultyColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Subject: ${topic.category}',
+                        style: TextStyle(
+                          color: kAccentColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Lesson: ${topic.title}',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        topic.description,
+                        style: TextStyle(
+                          color: isDark ? Colors.white.withOpacity(0.7) : Colors.grey.shade700,
+                          fontSize: 12,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const Spacer(),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: 14,
+                            color: isDark ? Colors.white.withOpacity(0.6) : Colors.grey,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${topic.estimatedMinutes} min',
+                            style: TextStyle(
+                              color: isDark ? Colors.white.withOpacity(0.6) : Colors.grey,
+                              fontSize: 11,
+                            ),
+                          ),
+                          const Spacer(),
+                          Icon(
+                            Icons.arrow_forward,
+                            size: 16,
+                            color: kPrimaryColor,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
