@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 import '../main.dart';
 import '../providers/learning_providers.dart';
@@ -38,6 +39,76 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void initState() {
     super.initState();
     _requestNotificationPermission();
+    _showWelcomeNotification();
+  }
+
+  Future<void> _showWelcomeNotification() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      const welcomeShownKey = 'welcome_notification_shown';
+      final hasShown = prefs.getBool(welcomeShownKey) ?? false;
+
+      if (!hasShown && mounted) {
+        await Future.delayed(const Duration(milliseconds: 800));
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: kPrimaryColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.celebration,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Welcome to AI Tutor!',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Start exploring lessons to boost your learning',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withOpacity(0.15)
+                : Colors.grey.shade900,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+
+        await prefs.setBool(welcomeShownKey, true);
+      }
+    } catch (e) {
+      debugPrint('Error showing welcome notification: $e');
+    }
   }
 
   Future<void> _requestNotificationPermission() async {
