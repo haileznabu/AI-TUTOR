@@ -150,7 +150,7 @@ class AIService {
 
   Future<AITutorial> generateTutorial(String topicTitle) async {
     if (!await isConfigured) {
-      throw Exception('API key not configured. Please set your API key first.');
+      throw Exception('Gemini API key is not configured.\n\nPlease add your API key to the .env file:\nGEMINI_API_KEY=your_key_here\n\nOr for web, store it in Firestore at:\nconfig/api_keys/gemini_api_key');
     }
 
     try {
@@ -158,6 +158,7 @@ class AIService {
       final Map<String, dynamic> response = await _callGeminiAPI(prompt);
       return _parseResponseFromTitle(response, topicTitle);
     } catch (e) {
+      debugPrint('Tutorial generation error: $e');
       throw Exception('Failed to generate tutorial: $e');
     }
   }

@@ -1,18 +1,28 @@
 # Quick Start Guide
 
+## ⚠️ IMPORTANT: Gemini API Key Required
+
+This app requires a **Google Gemini API key** to generate AI-powered learning content. Without it, you'll see an error when clicking on topics.
+
+**Get your free API key here:** https://makersuite.google.com/app/apikey
+
 ## Setup in 3 Steps
 
-### 1. Copy and Configure Environment File
-```bash
-cp .env.example .env
-```
+### 1. Configure Your Gemini API Key
 
-Then edit `.env` and add your Gemini API key:
+**Edit the `.env` file** in the project root and replace the placeholder:
+
 ```
 GEMINI_API_KEY=your_actual_key_here
 ```
 
-Get your API key from: https://makersuite.google.com/app/apikey
+With your actual API key:
+
+```
+GEMINI_API_KEY=AIzaSyC...your_real_key
+```
+
+**Where to get the API key:** https://makersuite.google.com/app/apikey
 
 ### 2. Install Dependencies
 ```bash

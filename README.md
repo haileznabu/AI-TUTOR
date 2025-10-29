@@ -64,7 +64,18 @@ flutter pub get
 
 ### 3. Configure Gemini API Key
 
-Provide your Gemini API key at run/build time using a dart-define:
+**Option 1: Using .env file (Recommended for development)**
+
+1. Open the `.env` file in the project root
+2. Replace `your_gemini_api_key_here` with your actual Gemini API key:
+   ```
+   GEMINI_API_KEY=AIza...your_actual_key
+   ```
+3. Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+
+**Option 2: Using dart-define (For production builds)**
+
+Provide your Gemini API key at run/build time:
 
 ```bash
 flutter run --dart-define=GEMINI_API_KEY=your_key_here
@@ -76,6 +87,13 @@ For release builds:
 flutter build apk --dart-define=GEMINI_API_KEY=your_key_here
 flutter build ios --dart-define=GEMINI_API_KEY=your_key_here
 ```
+
+**Option 3: For Web (Using Firestore)**
+
+Store the API key in Firestore:
+- Collection: `config`
+- Document: `api_keys`
+- Field: `gemini_api_key` with your API key value
 
 ### 4. Firebase Configuration
 

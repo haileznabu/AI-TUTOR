@@ -368,35 +368,47 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
     final subtextColor = isDark ? Colors.white.withOpacity(0.7) : Colors.black54;
+    final isApiKeyError = _error?.contains('API key') ?? false;
 
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.error_outline,
+              isApiKeyError ? Icons.key_off : Icons.error_outline,
               size: 64,
               color: isDark ? Colors.white.withOpacity(0.5) : Colors.black45,
             ),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              isApiKeyError ? 'API Key Required' : 'Something went wrong',
               style: TextStyle(
                 color: textColor,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              _error!,
-              style: TextStyle(
-                color: subtextColor,
-                fontSize: 14,
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withOpacity(0.08) : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark ? Colors.white.withOpacity(0.15) : Colors.grey.shade300,
+                ),
               ),
-              textAlign: TextAlign.center,
+              child: Text(
+                _error!,
+                style: TextStyle(
+                  color: subtextColor,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
