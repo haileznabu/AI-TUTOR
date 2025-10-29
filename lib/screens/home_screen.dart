@@ -274,7 +274,7 @@ class _DesktopHeader extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    userName[0].toUpperCase(),
+                    userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 28,
@@ -1950,7 +1950,7 @@ class _DesktopSideNav extends ConsumerWidget {
                           ),
                           child: Center(
                             child: Text(
-                              profile.name[0].toUpperCase(),
+                              profile.name.isNotEmpty ? profile.name[0].toUpperCase() : 'U',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 20,
