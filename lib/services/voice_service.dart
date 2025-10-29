@@ -7,6 +7,11 @@ class VoiceService {
   VoidCallback? _onSpeakComplete;
 
   Future<bool> initializeTts() async {
+    if (kIsWeb) {
+      debugPrint('TTS not supported on web');
+      return false;
+    }
+
     if (_isTtsInitialized && _flutterTts != null) return true;
 
     try {
@@ -45,6 +50,11 @@ class VoiceService {
   }
 
   Future<void> speak(String text) async {
+    if (kIsWeb) {
+      debugPrint('TTS not available on web');
+      return;
+    }
+
     if (!_isTtsInitialized || _flutterTts == null) {
       final initialized = await initializeTts();
       if (!initialized || _flutterTts == null) {
@@ -62,6 +72,9 @@ class VoiceService {
   }
 
   Future<void> stop() async {
+    if (kIsWeb) {
+      return;
+    }
     if (_flutterTts != null) {
       try {
         await _flutterTts!.stop();
@@ -72,6 +85,9 @@ class VoiceService {
   }
 
   void dispose() {
+    if (kIsWeb) {
+      return;
+    }
     if (_flutterTts != null) {
       try {
         _flutterTts!.stop();

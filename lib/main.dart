@@ -149,8 +149,13 @@ class LaunchDecider extends StatelessWidget {
   const LaunchDecider({super.key});
 
   Future<Widget> _getInitialScreen() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final bool hasCompletedOnboarding = prefs.getBool(onboarding_complete_v2) ?? false;
+    bool hasCompletedOnboarding = false;
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      hasCompletedOnboarding = prefs.getBool(onboarding_complete_v2) ?? false;
+    } catch (e) {
+      debugPrint('Error loading onboarding state: $e');
+    }
 
     final User? currentUser = FirebaseAuth.instance.currentUser;
 

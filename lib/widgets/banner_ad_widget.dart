@@ -20,7 +20,11 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   }
 
   void _loadAd() {
-    _bannerAd = AdService().createBannerAd()
+    final ad = AdService().createBannerAd();
+    if (ad == null) {
+      return;
+    }
+    _bannerAd = ad
       ..load().then((_) {
         if (mounted) {
           setState(() {

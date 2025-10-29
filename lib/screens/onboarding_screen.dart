@@ -37,8 +37,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   Future<void> _completeOnboarding() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(onboarding_complete_v2, true);
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(onboarding_complete_v2, true);
+    } catch (e) {
+      debugPrint('Error saving onboarding state: $e');
+    }
 
     final User? currentUser = FirebaseAuth.instance.currentUser;
 
@@ -59,7 +63,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     try {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setBool(onboarding_complete_v2, true);
+    } catch (e) {
+      debugPrint('Error saving onboarding state: $e');
+    }
 
+    try {
       final userCredential = await FirebaseAuth.instance.signInAnonymously();
       final user = userCredential.user;
 
