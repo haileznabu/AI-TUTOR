@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../constants/app_constants.dart';
+import 'dart:ui';
+import '../main.dart';
 import '../widgets/auth_widgets.dart';
 import 'home_screen.dart';
 
@@ -84,11 +85,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               flex: isDesktop ? 5 : 4,
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: isDark ? const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: kDarkGradient,
-                  ) : const LinearGradient(
+                  gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [kPrimaryColor, kAccentColor],
@@ -151,7 +148,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             // Right panel - Auth form
             Expanded(
               flex: isDesktop ? 4 : 5,
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
                 decoration: BoxDecoration(
                   gradient: isDark ? const LinearGradient(
                     begin: Alignment.topLeft,
@@ -266,7 +265,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
     // Mobile layout
     return Scaffold(
-      body: Container(
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
         decoration: BoxDecoration(
           gradient: isDark ? const LinearGradient(
             begin: Alignment.topLeft,
@@ -375,43 +376,57 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     required String description,
     required bool isDesktop,
   }) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [kPrimaryColor, kAccentColor],
-            ),
+            color: Colors.white.withOpacity(0.15),
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.3),
+            ),
           ),
-          child: Icon(icon, color: Colors.white, size: isDesktop ? 24 : 20),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: isDesktop ? 18 : 16,
-                  fontWeight: FontWeight.w600,
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                child: Icon(icon, color: Colors.white, size: isDesktop ? 24 : 20),
               ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
-                  fontSize: isDesktop ? 14 : 13,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: isDesktop ? 18 : 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.85),
+                        fontSize: isDesktop ? 14 : 13,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

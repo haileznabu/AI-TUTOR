@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:ui';
 import '../main.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
@@ -130,7 +131,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: Container(
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
         decoration: BoxDecoration(
           gradient: isDark ? const LinearGradient(
             begin: Alignment.topLeft,
@@ -207,30 +210,75 @@ class _OnboardingPage extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          width: 120,
-          height: 120,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(colors: [kPrimaryColor, kAccentColor]),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(60),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(colors: [kPrimaryColor, kAccentColor]),
+                border: Border.all(
+                  color: isDark ? Colors.white.withOpacity(0.2) : kPrimaryColor.withOpacity(0.3),
+                  width: 2,
+                ),
+                boxShadow: isDark ? null : [
+                  BoxShadow(
+                    color: kPrimaryColor.withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Icon(page.icon, color: Colors.white, size: 64),
+            ),
           ),
-          child: Icon(page.icon, color: Colors.white, size: 64),
         ),
-        const SizedBox(height: 32),
-        Text(
-          page.title,
-          textAlign: TextAlign.center,
-          style: textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          page.subtitle,
-          textAlign: TextAlign.center,
-          style: textTheme.bodyMedium?.copyWith(
-            color: isDark ? Colors.white70 : Colors.grey.shade700,
+        const SizedBox(height: 48),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isDark ? Colors.white.withOpacity(0.15) : Colors.grey.shade200,
+                ),
+                boxShadow: isDark ? null : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    page.title,
+                    textAlign: TextAlign.center,
+                    style: textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    page.subtitle,
+                    textAlign: TextAlign.center,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: isDark ? Colors.white.withOpacity(0.7) : Colors.grey.shade700,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ],
