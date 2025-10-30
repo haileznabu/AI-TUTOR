@@ -267,7 +267,7 @@ Rules:
   Future<Map<String, dynamic>> _postToGemini(String prompt, {required int maxTokens}) async {
     final apiKey = await _apiKey;
     final url = Uri.parse(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey');
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey');
 
     final response = await http.post(
       url,
@@ -314,7 +314,7 @@ Rules:
   Future<String> _callGeminiChat(List<ChatMessage> messages) async {
     final apiKey = await _apiKey;
     final url = Uri.parse(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey');
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey');
 
     // Map messages to Gemini's content format
     final contents = messages.map((m) => {
