@@ -7,11 +7,15 @@ import '../models/quiz_model.dart';
 import 'firestore_service.dart';
 import 'firebase_auth_service.dart';
 import 'ai_service.dart';
+import 'offline_cache_service.dart';
+import 'connectivity_service.dart';
 
 class LearningRepository {
   final FirestoreService _firestoreService = FirestoreService();
   final FirebaseAuthService _authService = FirebaseAuthService();
   final AIService _aiService = AIService();
+  final OfflineCacheService _cacheService = OfflineCacheService();
+  final ConnectivityService _connectivityService = ConnectivityService();
   Future<UserProfile> fetchUserProfile() async {
     final userId = _authService.currentUserId;
     if (userId == null) {
@@ -289,33 +293,57 @@ class LearningRepository {
       throw Exception('User not authenticated');
     }
 
-    debugPrint('[Tutorial Cache] Checking cache for topicId: $topicId');
-    final cachedTutorial = await _firestoreService.getTutorial(
-      userId: userId,
-      topicId: topicId,
-    );
+    final isOnline = await _connectivityService.checkConnectivity();
 
-    if (cachedTutorial != null) {
-      debugPrint('[Tutorial Cache] Found cached tutorial for: $topicId');
-      return cachedTutorial;
+    debugPrint('[Tutorial Cache] Checking offline cache for topicId: $topicId');
+    final offlineCached = await _cacheService.getCachedTutorial(topicId);
+
+    if (!isOnline && offlineCached != null) {
+      debugPrint('[Tutorial Cache] Using offline cached tutorial for: $topicId');
+      return offlineCached;
     }
 
-    debugPrint('[Tutorial Cache] No cache found. Generating tutorial for: $topicTitle');
-    final generatedTutorial = await _aiService.generateTutorial(topicTitle);
+    if (isOnline) {
+      debugPrint('[Tutorial Cache] Checking Firestore cache for topicId: $topicId');
+      final cachedTutorial = await _firestoreService.getTutorial(
+        userId: userId,
+        topicId: topicId,
+      );
 
-    debugPrint('[Tutorial Cache] Saving tutorial to Firestore for: $topicId');
-    await _firestoreService.saveTutorial(
-      userId: userId,
-      topicId: topicId,
-      tutorial: generatedTutorial,
-    );
+      if (cachedTutorial != null) {
+        debugPrint('[Tutorial Cache] Found cached tutorial in Firestore: $topicId');
+        await _cacheService.cacheTutorial(topicId, cachedTutorial);
+        await _cacheService.cacheSummary(topicId, cachedTutorial.summary);
+        return cachedTutorial;
+      }
 
-    await _firestoreService.addVisitedTopic(
-      userId: userId,
-      topicId: topicId,
-    );
+      debugPrint('[Tutorial Cache] No cache found. Generating tutorial for: $topicTitle');
+      final generatedTutorial = await _aiService.generateTutorial(topicTitle);
 
-    return generatedTutorial;
+      debugPrint('[Tutorial Cache] Saving tutorial to Firestore for: $topicId');
+      await _firestoreService.saveTutorial(
+        userId: userId,
+        topicId: topicId,
+        tutorial: generatedTutorial,
+      );
+
+      await _firestoreService.addVisitedTopic(
+        userId: userId,
+        topicId: topicId,
+      );
+
+      await _cacheService.cacheTutorial(topicId, generatedTutorial);
+      await _cacheService.cacheSummary(topicId, generatedTutorial.summary);
+
+      return generatedTutorial;
+    }
+
+    if (offlineCached != null) {
+      debugPrint('[Tutorial Cache] Using offline cached tutorial (offline mode): $topicId');
+      return offlineCached;
+    }
+
+    throw Exception('No internet connection and no cached content available');
   }
 
   Future<Quiz> getQuizForTopic(String topicId, String topicTitle) async {
@@ -324,28 +352,50 @@ class LearningRepository {
       throw Exception('User not authenticated');
     }
 
-    debugPrint('[Quiz Cache] Checking cache for topicId: $topicId');
-    final cachedQuiz = await _firestoreService.getQuiz(
-      userId: userId,
-      topicId: topicId,
-    );
+    final isOnline = await _connectivityService.checkConnectivity();
 
-    if (cachedQuiz != null) {
-      debugPrint('[Quiz Cache] Found cached quiz for: $topicId');
-      return cachedQuiz;
+    debugPrint('[Quiz Cache] Checking offline cache for topicId: $topicId');
+    final offlineCached = await _cacheService.getCachedQuiz(topicId);
+
+    if (!isOnline && offlineCached != null) {
+      debugPrint('[Quiz Cache] Using offline cached quiz for: $topicId');
+      return offlineCached;
     }
 
-    debugPrint('[Quiz Cache] No cache found. Generating quiz for: $topicTitle');
-    final generatedQuiz = await _aiService.generateQuiz(topicTitle);
+    if (isOnline) {
+      debugPrint('[Quiz Cache] Checking Firestore cache for topicId: $topicId');
+      final cachedQuiz = await _firestoreService.getQuiz(
+        userId: userId,
+        topicId: topicId,
+      );
 
-    debugPrint('[Quiz Cache] Saving quiz to Firestore for: $topicId');
-    await _firestoreService.saveQuiz(
-      userId: userId,
-      topicId: topicId,
-      quiz: generatedQuiz,
-    );
+      if (cachedQuiz != null) {
+        debugPrint('[Quiz Cache] Found cached quiz in Firestore: $topicId');
+        await _cacheService.cacheQuiz(topicId, cachedQuiz);
+        return cachedQuiz;
+      }
 
-    return generatedQuiz;
+      debugPrint('[Quiz Cache] No cache found. Generating quiz for: $topicTitle');
+      final generatedQuiz = await _aiService.generateQuiz(topicTitle);
+
+      debugPrint('[Quiz Cache] Saving quiz to Firestore for: $topicId');
+      await _firestoreService.saveQuiz(
+        userId: userId,
+        topicId: topicId,
+        quiz: generatedQuiz,
+      );
+
+      await _cacheService.cacheQuiz(topicId, generatedQuiz);
+
+      return generatedQuiz;
+    }
+
+    if (offlineCached != null) {
+      debugPrint('[Quiz Cache] Using offline cached quiz (offline mode): $topicId');
+      return offlineCached;
+    }
+
+    throw Exception('No internet connection and no cached content available');
   }
 
   Future<void> saveProgress(
@@ -362,13 +412,31 @@ class LearningRepository {
         ? ((currentStepIndex / totalSteps) * 100).round()
         : 0;
 
-    await _firestoreService.saveUserProgress(
-      userId: userId,
-      topicId: topicId,
-      progressPercentage: progressPercentage,
-      currentStepIndex: currentStepIndex,
-      totalSteps: totalSteps,
-    );
+    final progressData = {
+      'topicId': topicId,
+      'progressPercentage': progressPercentage,
+      'currentStepIndex': currentStepIndex,
+      'totalSteps': totalSteps,
+      'lastUpdated': DateTime.now().toIso8601String(),
+    };
+
+    await _cacheService.cacheProgress(topicId, progressData);
+
+    final isOnline = await _connectivityService.checkConnectivity();
+    if (isOnline) {
+      try {
+        await _firestoreService.saveUserProgress(
+          userId: userId,
+          topicId: topicId,
+          progressPercentage: progressPercentage,
+          currentStepIndex: currentStepIndex,
+          totalSteps: totalSteps,
+        );
+        await _cacheService.clearPendingSync(topicId, 'progress');
+      } catch (e) {
+        debugPrint('[Progress] Failed to sync online, will retry later: $e');
+      }
+    }
   }
 
   Future<Map<String, int>> getUserProgress() async {
@@ -581,5 +649,124 @@ class LearningRepository {
       debugPrint('Error getting lessons for date ${date.toString()}: $e');
       return 0;
     }
+  }
+
+  Future<void> downloadForOffline(String topicId, String topicTitle) async {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    final isOnline = await _connectivityService.checkConnectivity();
+    if (!isOnline) {
+      throw Exception('Cannot download content while offline');
+    }
+
+    debugPrint('[Offline Download] Starting download for: $topicId');
+
+    try {
+      final tutorial = await getTutorialForTopic(topicId, topicTitle);
+      await _cacheService.cacheTutorial(topicId, tutorial);
+      await _cacheService.cacheSummary(topicId, tutorial.summary);
+
+      final quiz = await getQuizForTopic(topicId, topicTitle);
+      await _cacheService.cacheQuiz(topicId, quiz);
+
+      await _cacheService.removeFromDownloadList(topicId);
+
+      debugPrint('[Offline Download] Successfully downloaded: $topicId');
+    } catch (e) {
+      debugPrint('[Offline Download] Failed to download: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> markForOfflineDownload(String topicId, String topicTitle) async {
+    await _cacheService.markForDownload(topicId, topicTitle);
+  }
+
+  Future<List<Map<String, dynamic>>> getOfflineDownloadQueue() async {
+    return await _cacheService.getDownloadList();
+  }
+
+  Future<bool> isTopicAvailableOffline(String topicId) async {
+    return await _cacheService.isTopicFullyCached(topicId);
+  }
+
+  Future<List<String>> getOfflineAvailableTopics() async {
+    return await _cacheService.getFullyCachedTopics();
+  }
+
+  Future<void> removeOfflineContent(String topicId) async {
+    await _cacheService.clearTopicCache(topicId);
+  }
+
+  Future<int> getOfflineCacheSize() async {
+    return await _cacheService.getCacheSizeInBytes();
+  }
+
+  Future<void> clearAllOfflineCache() async {
+    await _cacheService.clearCache();
+  }
+
+  Future<void> syncPendingChanges() async {
+    final userId = _authService.currentUserId;
+    if (userId == null) {
+      debugPrint('[Sync] User not authenticated, skipping sync');
+      return;
+    }
+
+    final isOnline = await _connectivityService.checkConnectivity();
+    if (!isOnline) {
+      debugPrint('[Sync] Offline, skipping sync');
+      return;
+    }
+
+    debugPrint('[Sync] Starting sync of pending changes');
+
+    final pendingItems = await _cacheService.getPendingSyncItems();
+
+    for (final item in pendingItems) {
+      try {
+        final topicId = item['topicId'] as String;
+        final type = item['type'] as String;
+        final data = item['data'];
+
+        if (type == 'progress') {
+          final progressData = data as Map<String, dynamic>;
+          await _firestoreService.saveUserProgress(
+            userId: userId,
+            topicId: topicId,
+            progressPercentage: progressData['progressPercentage'] as int,
+            currentStepIndex: progressData['currentStepIndex'] as int,
+            totalSteps: progressData['totalSteps'] as int,
+          );
+
+          await _cacheService.clearPendingSync(topicId, type);
+          debugPrint('[Sync] Synced progress for: $topicId');
+        }
+      } catch (e) {
+        debugPrint('[Sync] Failed to sync item: $e');
+      }
+    }
+
+    debugPrint('[Sync] Completed sync');
+  }
+
+  Future<Map<String, dynamic>> getOfflineStatus() async {
+    final isOnline = await _connectivityService.checkConnectivity();
+    final cachedTopics = await getOfflineAvailableTopics();
+    final cacheSize = await getOfflineCacheSize();
+    final downloadQueue = await getOfflineDownloadQueue();
+    final pendingSync = await _cacheService.getPendingSyncItems();
+
+    return {
+      'isOnline': isOnline,
+      'cachedTopicsCount': cachedTopics.length,
+      'cacheSizeBytes': cacheSize,
+      'cacheSizeMB': (cacheSize / (1024 * 1024)).toStringAsFixed(2),
+      'downloadQueueCount': downloadQueue.length,
+      'pendingSyncCount': pendingSync.length,
+    };
   }
 }

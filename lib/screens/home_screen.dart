@@ -10,6 +10,7 @@ import '../providers/learning_providers.dart';
 import 'chat_screen.dart';
 import 'profile_screen.dart';
 import 'progress_screen.dart';
+import 'offline_manager_screen.dart';
 import '../models/topic_model.dart';
 import 'topic_detail_screen.dart';
 import '../services/visited_topics_service.dart';
@@ -17,6 +18,7 @@ import '../services/firestore_service.dart';
 import '../services/notification_service.dart';
 import '../widgets/banner_ad_widget.dart';
 import '../widgets/shimmer_loading_widgets.dart';
+import '../widgets/connectivity_indicator.dart';
 
 // 🏠 HOME
 class HomeScreen extends ConsumerStatefulWidget {
@@ -227,7 +229,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ) : null,
           color: isDark ? null : Colors.white,
         ),
-        child: SafeArea(child: body),
+        child: Column(
+          children: [
+            const ConnectivityIndicator(),
+            Expanded(child: SafeArea(child: body)),
+          ],
+        ),
       ),
       backgroundColor: Colors.transparent,
       bottomNavigationBar: Padding(
@@ -315,36 +322,66 @@ class _PersonalizedHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hello, $userName! 👋',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                dateStr,
+                style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        Row(
           children: [
-            Text(
-              'Hello, $userName! 👋',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: textColor,
+            const ConnectivityStatusIcon(),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const OfflineManagerScreen(),
+                  ),
+                );
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [kPrimaryColor, kSecondaryColor],
+                  ),
+                ),
+                child: const Icon(Icons.offline_bolt, color: Colors.white, size: 20),
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              dateStr,
-              style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 12),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: onSignOut,
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [kPrimaryColor, kAccentColor],
+                  ),
+                ),
+                child: const Icon(Icons.logout, color: Colors.white, size: 20),
+              ),
             ),
           ],
-        ),
-        GestureDetector(
-          onTap: onSignOut,
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [kPrimaryColor, kAccentColor],
-              ),
-            ),
-            child: const Icon(Icons.logout, color: Colors.white, size: 20),
-          ),
         ),
       ],
     );
