@@ -84,10 +84,14 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               flex: isDesktop ? 5 : 4,
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: isDark ? const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: kDarkGradient,
+                  ) : const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [kPrimaryColor, kAccentColor],
                   ),
                 ),
                 child: SafeArea(
@@ -112,7 +116,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                         Text(
                           'Personalized learning powered by AI. Master concepts faster with step-by-step explanations, interactive quizzes, and real-time feedback.',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withOpacity(0.9),
                             fontSize: isDesktop ? 18 : 16,
                             height: 1.6,
                           ),
