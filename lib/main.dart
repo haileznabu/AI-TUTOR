@@ -51,10 +51,14 @@ Future<void> main() async {
   runApp(ProviderScope(child: const MyApp()));
 }
 
-const kPrimaryColor = Color(0xFFB366FF);
-const kAccentColor = Color(0xFFFF66B2);
-const kDarkGradient = [Color(0xFF1A0033), Color(0xFF2D0052), Color(0xFF1A0033)];
-const kLightGradient = [Color(0xFFF5F5F5), Color(0xFFE0E0E0), Color(0xFFF5F5F5)];
+const kPrimaryColor = Color(0xFF0EA5E9);
+const kSecondaryColor = Color(0xFF06B6D4);
+const kAccentColor = Color(0xFFF59E0B);
+const kSuccessColor = Color(0xFF10B981);
+const kWarningColor = Color(0xFFF59E0B);
+const kErrorColor = Color(0xFFEF4444);
+const kDarkGradient = [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0F172A)];
+const kLightGradient = [Color(0xFFFAFAFA), Color(0xFFF1F5F9), Color(0xFFFFFFFF)];
 const onboarding_complete_v2 = 'onboarding_complete_v2';
 
 const kAnimationFast = Duration(milliseconds: 200);
@@ -91,49 +95,104 @@ class MyApp extends ConsumerWidget {
       brightness: Brightness.light,
       colorScheme: ColorScheme.light(
         primary: kPrimaryColor,
-        secondary: kAccentColor,
+        secondary: kSecondaryColor,
+        tertiary: kAccentColor,
         surface: Colors.white,
-        error: Colors.red.shade400,
+        surfaceContainerHighest: const Color(0xFFF1F5F9),
+        error: kErrorColor,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: const Color(0xFF0F172A),
+        onSurfaceVariant: const Color(0xFF64748B),
+        outline: const Color(0xFFE2E8F0),
       ),
       scaffoldBackgroundColor: const Color(0xFFFAFAFA),
       cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 0,
+        shadowColor: Colors.black.withOpacity(0.05),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
         ),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.black87),
+        surfaceTintColor: Colors.transparent,
+        iconTheme: IconThemeData(color: Color(0xFF0F172A), size: 24),
         titleTextStyle: TextStyle(
-          color: Colors.black87,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
+          color: Color(0xFF0F172A),
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.5,
         ),
       ),
-      textTheme: GoogleFonts.interTextTheme(
+      textTheme: GoogleFonts.dmSansTextTheme(
         ThemeData(brightness: Brightness.light).textTheme,
       ).apply(
-        bodyColor: Colors.black87,
-        displayColor: Colors.black87,
+        bodyColor: const Color(0xFF334155),
+        displayColor: const Color(0xFF0F172A),
+      ).copyWith(
+        displayLarge: GoogleFonts.dmSans(
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -1,
+          color: const Color(0xFF0F172A),
+        ),
+        displayMedium: GoogleFonts.dmSans(
+          fontSize: 28,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.5,
+          color: const Color(0xFF0F172A),
+        ),
+        headlineMedium: GoogleFonts.dmSans(
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.5,
+          color: const Color(0xFF0F172A),
+        ),
+        titleLarge: GoogleFonts.dmSans(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF0F172A),
+        ),
+        bodyLarge: GoogleFonts.dmSans(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          color: const Color(0xFF334155),
+          height: 1.5,
+        ),
+        bodyMedium: GoogleFonts.dmSans(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: const Color(0xFF64748B),
+          height: 1.5,
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.grey.shade50,
+        fillColor: const Color(0xFFF8FAFC),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: kPrimaryColor, width: 2.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: kErrorColor, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: kErrorColor, width: 2.5),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -141,11 +200,42 @@ class MyApp extends ConsumerWidget {
           backgroundColor: kPrimaryColor,
           foregroundColor: Colors.white,
           elevation: 0,
+          shadowColor: kPrimaryColor.withOpacity(0.3),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
+          textStyle: GoogleFonts.dmSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
         ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: kPrimaryColor,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: const Color(0xFFF1F5F9),
+        labelStyle: GoogleFonts.dmSans(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: const Color(0xFF334155),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: Color(0xFFE2E8F0),
+        thickness: 1,
+        space: 1,
       ),
     );
   }
@@ -154,15 +244,149 @@ class MyApp extends ConsumerWidget {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: kPrimaryColor,
-        brightness: Brightness.dark,
+      colorScheme: ColorScheme.dark(
+        primary: kPrimaryColor,
+        secondary: kSecondaryColor,
+        tertiary: kAccentColor,
+        surface: const Color(0xFF1E293B),
+        surfaceContainerHighest: const Color(0xFF334155),
+        error: kErrorColor,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: const Color(0xFFF1F5F9),
+        onSurfaceVariant: const Color(0xFF94A3B8),
+        outline: const Color(0xFF475569),
       ),
-      textTheme: GoogleFonts.interTextTheme(
+      scaffoldBackgroundColor: const Color(0xFF0F172A),
+      cardTheme: CardThemeData(
+        color: const Color(0xFF1E293B),
+        elevation: 0,
+        shadowColor: Colors.black.withOpacity(0.3),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFF334155), width: 1),
+        ),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF0F172A),
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        iconTheme: IconThemeData(color: Color(0xFFF1F5F9), size: 24),
+        titleTextStyle: TextStyle(
+          color: Color(0xFFF1F5F9),
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.5,
+        ),
+      ),
+      textTheme: GoogleFonts.dmSansTextTheme(
         ThemeData(brightness: Brightness.dark).textTheme,
       ).apply(
-        bodyColor: Colors.white,
-        displayColor: Colors.white,
+        bodyColor: const Color(0xFFCBD5E1),
+        displayColor: const Color(0xFFF1F5F9),
+      ).copyWith(
+        displayLarge: GoogleFonts.dmSans(
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -1,
+          color: const Color(0xFFF1F5F9),
+        ),
+        displayMedium: GoogleFonts.dmSans(
+          fontSize: 28,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.5,
+          color: const Color(0xFFF1F5F9),
+        ),
+        headlineMedium: GoogleFonts.dmSans(
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.5,
+          color: const Color(0xFFF1F5F9),
+        ),
+        titleLarge: GoogleFonts.dmSans(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFFF1F5F9),
+        ),
+        bodyLarge: GoogleFonts.dmSans(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          color: const Color(0xFFCBD5E1),
+          height: 1.5,
+        ),
+        bodyMedium: GoogleFonts.dmSans(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: const Color(0xFF94A3B8),
+          height: 1.5,
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF1E293B),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFF475569), width: 1.5),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFF475569), width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: kPrimaryColor, width: 2.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: kErrorColor, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: kErrorColor, width: 2.5),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: kPrimaryColor,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shadowColor: kPrimaryColor.withOpacity(0.3),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
+          textStyle: GoogleFonts.dmSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: kPrimaryColor,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: const Color(0xFF334155),
+        labelStyle: GoogleFonts.dmSans(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: const Color(0xFFCBD5E1),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: Color(0xFF334155),
+        thickness: 1,
+        space: 1,
       ),
     );
   }
