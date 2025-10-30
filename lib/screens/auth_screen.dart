@@ -84,12 +84,11 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               flex: isDesktop ? 5 : 4,
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: isDark ? const LinearGradient(
+                  gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: kDarkGradient,
-                  ) : null,
-                  color: isDark ? null : kPrimaryColor,
+                  ),
                 ),
                 child: SafeArea(
                   child: Padding(
@@ -149,7 +148,14 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             Expanded(
               flex: isDesktop ? 4 : 5,
               child: Container(
-                color: isDark ? const Color(0xFF0A0015) : Colors.white,
+                decoration: BoxDecoration(
+                  gradient: isDark ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: kDarkGradient,
+                  ) : null,
+                  color: isDark ? null : Colors.white,
+                ),
                 child: SafeArea(
                   child: Column(
                     children: [
@@ -256,17 +262,15 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
     // Mobile layout
     return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: isDark ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: kDarkGradient,
-              ) : null,
-              color: isDark ? null : Colors.white,
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: isDark ? const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: kDarkGradient,
+          ) : null,
+          color: isDark ? null : Colors.white,
+        ),
             child: SafeArea(
               child: Column(
                 children: [
@@ -358,7 +362,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

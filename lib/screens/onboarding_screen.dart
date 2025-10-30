@@ -127,15 +127,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final _ = Theme.of(context).textTheme;
     final bool isLast = _currentPage == _pages.length - 1;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
+        decoration: BoxDecoration(
+          gradient: isDark ? const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: kDarkGradient,
-          ),
+          ) : null,
+          color: isDark ? null : Colors.white,
         ),
         child: SafeArea(
           child: Padding(
@@ -147,9 +149,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   children: [
                     TextButton(
                       onPressed: _skipToHome,
-                      child: const Text(
+                      child: Text(
                         'Skip',
-                        style: TextStyle(color: Colors.white70),
+                        style: TextStyle(color: isDark ? Colors.white70 : Colors.grey.shade700),
                       ),
                     ),
                   ],
@@ -201,6 +203,7 @@ class _OnboardingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -219,14 +222,16 @@ class _OnboardingPage extends StatelessWidget {
           textAlign: TextAlign.center,
           style: textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: isDark ? Colors.white : Colors.black87,
           ),
         ),
         const SizedBox(height: 12),
         Text(
           page.subtitle,
           textAlign: TextAlign.center,
-          style: textTheme.bodyMedium?.copyWith(color: Colors.white70),
+          style: textTheme.bodyMedium?.copyWith(
+            color: isDark ? Colors.white70 : Colors.grey.shade700,
+          ),
         ),
       ],
     );
@@ -240,6 +245,7 @@ class _DotsIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(count, (i) {
@@ -250,7 +256,7 @@ class _DotsIndicator extends StatelessWidget {
           height: 8,
           width: active ? 20 : 8,
           decoration: BoxDecoration(
-            color: active ? kPrimaryColor : Colors.white24,
+            color: active ? kPrimaryColor : (isDark ? Colors.white24 : Colors.grey.shade300),
             borderRadius: BorderRadius.circular(8),
           ),
         );
