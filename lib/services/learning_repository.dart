@@ -122,26 +122,52 @@ class LearningRepository {
     final lessonsPerDay = <int>[];
     final avgTimePerLessonMinutes = <double>[];
 
+    debugPrint('[Weekly Activity] Calculating activity for past 7 days');
+
     for (int i = 6; i >= 0; i--) {
       final date = now.subtract(Duration(days: i));
       final lessons = await _getLessonsForDate(userId, date);
       lessonsPerDay.add(lessons);
-      avgTimePerLessonMinutes.add(lessons > 0 ? 20.0 : 0.0);
+
+      final timeSpent = await _getTimeSpentForDate(userId, date);
+      final avgTime = lessons > 0 ? (timeSpent.inMinutes / lessons).toDouble() : 0.0;
+      avgTimePerLessonMinutes.add(avgTime);
     }
 
-    final recentLessons = lessonsPerDay.sublist(4, 7).fold<int>(0, (sum, val) => sum + val);
-    final earlierLessons = lessonsPerDay.sublist(0, 3).fold<int>(0, (sum, val) => sum + val);
-    final paceTrend = recentLessons > earlierLessons
-        ? 'Accelerating'
-        : recentLessons == earlierLessons
-            ? 'Steady'
-            : 'Slowing';
+    final recentLessons = lessonsPerDay.length >= 7
+        ? lessonsPerDay.sublist(4, 7).fold<int>(0, (sum, val) => sum + val)
+        : lessonsPerDay.fold<int>(0, (sum, val) => sum + val);
+
+    final earlierLessons = lessonsPerDay.length >= 7
+        ? lessonsPerDay.sublist(0, 3).fold<int>(0, (sum, val) => sum + val)
+        : 0;
+
+    String paceTrend;
+    if (earlierLessons == 0 && recentLessons > 0) {
+      paceTrend = 'Growing';
+    } else if (recentLessons > earlierLessons) {
+      final percentIncrease = ((recentLessons - earlierLessons) / earlierLessons * 100).round();
+      paceTrend = percentIncrease > 50 ? 'Accelerating' : 'Increasing';
+    } else if (recentLessons == earlierLessons) {
+      paceTrend = 'Steady';
+    } else {
+      final percentDecrease = ((earlierLessons - recentLessons) / earlierLessons * 100).round();
+      paceTrend = percentDecrease > 50 ? 'Declining' : 'Slowing';
+    }
+
+    final thisWeekTotal = lessonsPerDay.fold<int>(0, (sum, val) => sum + val);
+    final lastWeekTotal = await _getLastWeekTotal(userId);
+    final fasterVsLastWeek = lastWeekTotal > 0
+        ? ((thisWeekTotal - lastWeekTotal) / lastWeekTotal * 100)
+        : 0.0;
+
+    debugPrint('[Weekly Activity] This week: $thisWeekTotal, Last week: $lastWeekTotal, Trend: $paceTrend');
 
     return WeeklyActivity(
       lessonsPerDay: lessonsPerDay,
       avgTimePerLessonMinutes: avgTimePerLessonMinutes,
       paceTrend: paceTrend,
-      fasterVsLastWeek: 0.0,
+      fasterVsLastWeek: fasterVsLastWeek,
     );
   }
 
@@ -471,44 +497,88 @@ class LearningRepository {
     }
   }
 
+  Future<Duration> _getTimeSpentForDate(String userId, DateTime date) async {
+    try {
+      final startOfDay = DateTime(date.year, date.month, date.day);
+      final endOfDay = startOfDay.add(const Duration(days: 1));
+
+      final progressSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('progress')
+          .where('lastUpdated', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+          .where('lastUpdated', isLessThan: Timestamp.fromDate(endOfDay))
+          .get();
+
+      final estimatedMinutesPerSession = 15;
+      final totalSessions = progressSnapshot.docs.length;
+
+      return Duration(minutes: totalSessions * estimatedMinutesPerSession);
+    } catch (e) {
+      debugPrint('Error getting time spent for date: $e');
+      return Duration.zero;
+    }
+  }
+
+  Future<int> _getLastWeekTotal(String userId) async {
+    try {
+      final now = DateTime.now();
+      int totalLessons = 0;
+
+      for (int i = 7; i <= 13; i++) {
+        final date = now.subtract(Duration(days: i));
+        final lessons = await _getLessonsForDate(userId, date);
+        totalLessons += lessons;
+      }
+
+      return totalLessons;
+    } catch (e) {
+      debugPrint('Error getting last week total: $e');
+      return 0;
+    }
+  }
+
   Future<int> _getLessonsForDate(String userId, DateTime date) async {
     try {
       final startOfDay = DateTime(date.year, date.month, date.day);
       final endOfDay = startOfDay.add(const Duration(days: 1));
 
+      final uniqueTopics = <String>{};
+
       final visitedSnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
           .collection('visitedTopics')
+          .where('visitedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+          .where('visitedAt', isLessThan: Timestamp.fromDate(endOfDay))
           .get();
+
+      for (var doc in visitedSnapshot.docs) {
+        final topicId = doc.data()['topicId'] as String?;
+        if (topicId != null) {
+          uniqueTopics.add(topicId);
+        }
+      }
 
       final quizSnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
           .collection('quizResults')
-          .where('completedAt', isGreaterThanOrEqualTo: startOfDay)
-          .where('completedAt', isLessThan: endOfDay)
+          .where('completedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+          .where('completedAt', isLessThan: Timestamp.fromDate(endOfDay))
           .get();
 
-      final uniqueTopics = <String>{};
-
-      for (var doc in visitedSnapshot.docs) {
-        final visitedAt = doc.data()['visitedAt'] as Timestamp?;
-        if (visitedAt != null) {
-          final visitDate = visitedAt.toDate();
-          if (visitDate.isAfter(startOfDay) && visitDate.isBefore(endOfDay)) {
-            uniqueTopics.add(doc.data()['topicId'] as String);
-          }
+      for (var doc in quizSnapshot.docs) {
+        final topicId = doc.data()['topicId'] as String?;
+        if (topicId != null) {
+          uniqueTopics.add(topicId);
         }
       }
 
-      for (var doc in quizSnapshot.docs) {
-        uniqueTopics.add(doc.data()['topicId'] as String);
-      }
-
+      debugPrint('[Weekly Activity] Date: ${date.toString().split(' ')[0]}, Topics: ${uniqueTopics.length}');
       return uniqueTopics.length;
     } catch (e) {
-      debugPrint('Error getting lessons for date: $e');
+      debugPrint('Error getting lessons for date ${date.toString()}: $e');
       return 0;
     }
   }
