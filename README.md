@@ -8,6 +8,14 @@ The platform employs sophisticated machine learning techniques to create individ
 
 ---
 
+## Application Preview
+
+![AI-TUTOR MVP Screenshot](assets/images/screenshot.png)
+
+*Experience personalized, AI-powered learning with an intuitive interface designed for learners of all ages*
+
+---
+
 ## Vision & Impact Alignment with SDG 4
 
 ### The Global Education Crisis
