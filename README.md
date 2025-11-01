@@ -8,11 +8,31 @@ The platform employs sophisticated machine learning techniques to create individ
 
 ---
 
-## Application Preview
+## Application Screenshots
 
-![AI-TUTOR MVP Screenshot](assets/images/screenshot.png)
+### Home Screen - Personalized Learning Hub
+![Home Screen](assets/images/home_screen.png)
+*Browse topics, continue your learning journey, and discover AI-powered recommendations tailored to your interests*
 
-*Experience personalized, AI-powered learning with an intuitive interface designed for learners of all ages*
+### Topic Learning - Interactive Tutorials
+![Topic Detail](assets/images/topic_detail.png)
+*Step-by-step AI-generated tutorials with code examples, explanations, and progress tracking*
+
+### AI Chat - Your Personal Tutor
+![Chat Screen](assets/images/chat_screen.png)
+*Ask questions anytime, get instant explanations, and receive personalized learning guidance*
+
+### Progress Analytics - Track Your Growth
+![Progress Screen](assets/images/progress_screen.png)
+*Visualize your learning journey with detailed analytics, achievements, and weekly activity insights*
+
+### Profile & Settings
+![Profile Screen](assets/images/profile_screen.png)
+*Monitor your stats, manage preferences, and track your overall learning progress*
+
+### Quiz Assessment - Test Your Knowledge
+![Quiz Screen](assets/images/quiz_screen.png)
+*Interactive quizzes with instant feedback and detailed explanations to reinforce your learning*
 
 ---
 
