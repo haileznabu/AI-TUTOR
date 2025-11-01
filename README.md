@@ -243,30 +243,50 @@ cd ai-tutor
 # Ensure you're on the stable Flutter channel
 flutter channel stable
 flutter upgrade
+
+# Clean Flutter to ensure fresh build
+flutter clean
 ```
 
-### Step 2: Dependency Installation
+### Step 2: Environment Configuration
+
+1. Copy the environment template file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit the `.env` file in the project root and add your API keys:
+   ```env
+   GEMINI_API_KEY=AIzaSy...your_actual_key_here
+   FIREBASE_PROJECT_ID=your_firebase_project_id
+   FIREBASE_API_KEY=your_firebase_api_key
+   ```
+
+3. **Important**: Never commit the `.env` file to version control (already in `.gitignore`)
+
+### Step 3: Dependency Installation & Platform Generation
 
 ```bash
 # Install Flutter packages
 flutter pub get
 
+# Generate platform-specific files (required since platform directories are in .gitignore)
+# This creates: ios/, android/, macos/, windows/, linux/
+flutter create --platforms ios,android,macos,windows,linux .
+
 # Generate type-safe Firestore models (if using build_runner)
 flutter pub run build_runner build
 ```
 
-### Step 3: Gemini API Configuration
+**Note**: Platform directories (`ios/`, `android/`, `macos/`, `windows/`, `linux/`) are not included in the repository. Running the commands above will generate them automatically on your local machine.
 
-Your AI-TUTOR instance requires a valid Gemini API key. Configure it using one of these methods:
+### Step 4: Gemini API Configuration
 
-#### **Method A: Environment File (Recommended for Development)**
+Your AI-TUTOR instance requires a valid Gemini API key. The recommended method is already covered above:
 
-1. Locate the `.env` file in the project root
-2. Add your API key:
-   ```env
-   GEMINI_API_KEY=AIzaSy...your_actual_key_here
-   ```
-3. Never commit this file to version control (already in `.gitignore`)
+#### **Using Environment File (Recommended)**
+
+Your `.env` file created in Step 2 contains the `GEMINI_API_KEY` which will be loaded at runtime.
 
 #### **Method B: Dart Define (For Build Pipelines)**
 
@@ -289,7 +309,7 @@ For web deployments where compile-time configuration is impractical:
 2. The app will retrieve it at runtime from the authenticated user's document
 3. Implement appropriate security rules to restrict access
 
-### Step 4: Firebase Project Configuration
+### Step 5: Firebase Project Configuration
 
 #### Android Setup
 
@@ -314,21 +334,23 @@ For web deployments where compile-time configuration is impractical:
 2. Firebase SDK loads automatically from CDN
 3. Ensure `index.html` includes Firebase script tags
 
-### Step 5: Running the Application
+### Step 6: Running the Application
 
 ```bash
 # Android emulator or physical device
-flutter run -d android --dart-define=GEMINI_API_KEY=your_key
+flutter run -d android
 
 # iOS simulator or physical device
-flutter run -d ios --dart-define=GEMINI_API_KEY=your_key
+flutter run -d ios
 
 # Web browser
-flutter run -d chrome --dart-define=GEMINI_API_KEY=your_key
+flutter run -d chrome
 
 # Run tests
 flutter test
 ```
+
+**Note**: The `GEMINI_API_KEY` from your `.env` file will be automatically loaded by the `flutter_dotenv` package at runtime. No need to pass it via `--dart-define` when using the `.env` file approach.
 
 ---
 
