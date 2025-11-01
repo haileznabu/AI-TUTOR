@@ -11,27 +11,33 @@ The platform employs sophisticated machine learning techniques to create individ
 ## Application Screenshots
 
 ### Home Screen - Personalized Learning Hub
-![Home Screen](assets/images/home_screen.png)
+<img src="assets/images/home_screen.png" alt="Home Screen" width="600">
+
 *Browse topics, continue your learning journey, and discover AI-powered recommendations tailored to your interests*
 
 ### Topic Learning - Interactive Tutorials
-![Topic Detail](assets/images/topic_detail.png)
+<img src="assets/images/topic_detail.png" alt="Topic Detail" width="600">
+
 *Step-by-step AI-generated tutorials with code examples, explanations, and progress tracking*
 
 ### AI Chat - Your Personal Tutor
-![Chat Screen](assets/images/chat_screen.png)
+<img src="assets/images/chat_screen.png" alt="Chat Screen" width="600">
+
 *Ask questions anytime, get instant explanations, and receive personalized learning guidance*
 
 ### Progress Analytics - Track Your Growth
-![Progress Screen](assets/images/progress_screen.png)
+<img src="assets/images/progress_screen.png" alt="Progress Screen" width="600">
+
 *Visualize your learning journey with detailed analytics, achievements, and weekly activity insights*
 
 ### Profile & Settings
-![Profile Screen](assets/images/profile_screen.png)
+<img src="assets/images/profile_screen.png" alt="Profile Screen" width="600">
+
 *Monitor your stats, manage preferences, and track your overall learning progress*
 
 ### Quiz Assessment - Test Your Knowledge
-![Quiz Screen](assets/images/quiz_screen.png)
+<img src="assets/images/quiz_screen.png" alt="Quiz Screen" width="600">
+
 *Interactive quizzes with instant feedback and detailed explanations to reinforce your learning*
 
 ---
