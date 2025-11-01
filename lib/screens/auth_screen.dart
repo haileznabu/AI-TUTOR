@@ -18,12 +18,12 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   bool isSignIn = true;
   late final AnimationController _fadeController = AnimationController(
     vsync: this,
-    duration: kAnimationSlow,
+    duration: kIsWeb ? const Duration(milliseconds: 200) : kAnimationSlow,
   )..forward();
 
   late final AnimationController _slideController = AnimationController(
     vsync: this,
-    duration: kAnimationNormal,
+    duration: kIsWeb ? const Duration(milliseconds: 200) : kAnimationNormal,
   )..forward();
 
   late final Animation<double> _fadeAnimation = CurvedAnimation(
@@ -32,7 +32,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   );
 
   late final Animation<Offset> _slideAnimation = Tween<Offset>(
-    begin: const Offset(0.3, 0),
+    begin: kIsWeb ? const Offset(0.1, 0) : const Offset(0.3, 0),
     end: Offset.zero,
   ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOut));
 
@@ -277,93 +277,92 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           color: isDark ? null : Colors.white,
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: Center(
-                  child: SingleChildScrollView(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SlideTransition(
-                        position: _slideAnimation,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const AuthLogo(),
-                            const SizedBox(height: 32),
-                            Text(
-                              isSignIn ? 'Welcome Back' : 'Create Account',
-                              style: textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              isSignIn
-                                  ? 'Sign in to your account to continue'
-                                  : 'Join us and start your journey',
-                              style: textTheme.bodyMedium?.copyWith(
-                                color: isDark ? Colors.white70 : Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(height: 40),
-                            AnimatedSwitcher(
-                              duration: kAnimationNormal,
-                              child: isSignIn
-                                  ? const SignInForm(key: ValueKey('SignIn'))
-                                  : const SignUpForm(key: ValueKey('SignUp')),
-                            ),
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton(
-                                onPressed: _handleSkip,
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: isDark ? Colors.white70 : Colors.black87,
-                                  side: BorderSide(color: isDark ? Colors.white.withOpacity(0.3) : Colors.grey.shade300),
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: const Text('Continue as Guest'),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  isSignIn
-                                      ? "Don't have an account? "
-                                      : "Already have an account? ",
-                                  style: textTheme.bodyMedium?.copyWith(
-                                    color: isDark ? Colors.white70 : Colors.grey,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: _toggleAuthMode,
-                                  child: Text(
-                                    isSignIn ? 'Sign Up' : 'Sign In',
-                                    style: const TextStyle(
-                                      color: kPrimaryColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom - 40,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20),
+                      const AuthLogo(),
+                      const SizedBox(height: 24),
+                      Text(
+                        isSignIn ? 'Welcome Back' : 'Create Account',
+                        style: textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black87,
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      Text(
+                        isSignIn
+                            ? 'Sign in to your account to continue'
+                            : 'Join us and start your journey',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: isDark ? Colors.white70 : Colors.grey,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 32),
+                      AnimatedSwitcher(
+                        duration: kIsWeb ? const Duration(milliseconds: 150) : kAnimationNormal,
+                        child: isSignIn
+                            ? const SignInForm(key: ValueKey('SignIn'))
+                            : const SignUpForm(key: ValueKey('SignUp')),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: _handleSkip,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                            side: BorderSide(color: isDark ? Colors.white.withOpacity(0.3) : Colors.grey.shade300),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Continue as Guest'),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            isSignIn
+                                ? "Don't have an account? "
+                                : "Already have an account? ",
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: isDark ? Colors.white70 : Colors.grey,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: _toggleAuthMode,
+                            child: Text(
+                              isSignIn ? 'Sign Up' : 'Sign In',
+                              style: const TextStyle(
+                                color: kPrimaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                   ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -376,56 +375,50 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     required String description,
     required bool isDesktop,
   }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.3),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.white, size: isDesktop ? 24 : 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isDesktop ? 18 : 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.85),
+                    fontSize: isDesktop ? 14 : 13,
+                  ),
+                ),
+              ],
             ),
           ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: Colors.white, size: isDesktop ? 24 : 20),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: isDesktop ? 18 : 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.85),
-                        fontSize: isDesktop ? 14 : 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }
@@ -594,7 +587,7 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         Row(
           children: [
             Checkbox(
@@ -610,7 +603,7 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
           ],
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
         GradientButton(
           label: 'Create Account',
           isLoading: _isLoading,
