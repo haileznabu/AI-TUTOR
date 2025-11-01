@@ -189,9 +189,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     if (isDesktop) {
       return Scaffold(
-        body: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
+        body: Container(
           decoration: BoxDecoration(
             gradient: isDark ? const LinearGradient(
               begin: Alignment.topLeft,
@@ -218,9 +216,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     return Scaffold(
       extendBody: true,
-      body: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+      body: Container(
         decoration: BoxDecoration(
           gradient: isDark ? const LinearGradient(
             begin: Alignment.topLeft,
@@ -491,33 +487,27 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
   String? _selectedCategory;
   final Map<String, bool> _expandedCategories = {};
   final FirestoreService _firestoreService = FirestoreService();
-  List<Topic> _allTopics = [];
-  bool _isLoading = true;
+  List<Topic> _allTopics = List<Topic>.from(_fallbackTopics);
+  bool _isLoading = false;
+  Future<List<dynamic>>? _cachedVisitedFuture;
 
   @override
   void initState() {
     super.initState();
+    _cachedVisitedFuture = _loadRecentlyVisitedWithProgress();
     _loadTopics();
   }
 
   Future<void> _loadTopics() async {
     try {
       final topics = await _firestoreService.getAllTopics();
-      if (mounted) {
+      if (mounted && topics.isNotEmpty) {
         setState(() {
-          _allTopics = topics.isNotEmpty ? topics : List<Topic>.from(_fallbackTopics);
-          _isLoading = false;
+          _allTopics = topics;
         });
       }
     } catch (e) {
       debugPrint('Error loading topics from Firestore: $e');
-      debugPrint('Using fallback topics instead');
-      if (mounted) {
-        setState(() {
-          _allTopics = List<Topic>.from(_fallbackTopics);
-          _isLoading = false;
-        });
-      }
     }
   }
 
@@ -1211,7 +1201,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
     }
 
     return FutureBuilder<List<dynamic>>(
-      future: _loadRecentlyVisitedWithProgress(),
+      future: _cachedVisitedFuture,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1289,7 +1279,7 @@ class _AiTopicExplorerState extends State<_AiTopicExplorer> {
     }
 
     return FutureBuilder<List<dynamic>>(
-      future: _loadRecentlyVisitedWithProgress(),
+      future: _cachedVisitedFuture,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -2025,9 +2015,7 @@ class GlassCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(borderRadius),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
+        child: Container(
           padding: padding,
           decoration: BoxDecoration(
             color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
@@ -2088,9 +2076,7 @@ class _DesktopSideNav extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(userProfileProvider);
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
+    return Container(
       width: 280,
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.2),
@@ -2319,9 +2305,7 @@ class _GlassNavBar extends ConsumerWidget {
       borderRadius: BorderRadius.circular(18),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
+        child: Container(
           decoration: BoxDecoration(
             color: isDark ? Colors.white.withOpacity(0.06) : Colors.white,
             borderRadius: BorderRadius.circular(18),
