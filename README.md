@@ -6,6 +6,14 @@
 
 The platform employs sophisticated machine learning techniques to create individualized learning pathways, delivering real-time adaptive feedback and interactive content generation—transforming passive content consumption into active, student-centered learning experiences that improve educational outcomes at scale.
 
+## Try the Live MVP
+
+Experience AI-TUTOR in action with our deployed web application:
+
+**Live Demo: [https://learn4-all-page.netlify.app/](https://learn4-all-page.netlify.app/)**
+
+No installation required - start learning immediately in your browser. The web app demonstrates all core features including AI-powered tutorials, adaptive quizzes, personalized chat assistance, and progress tracking.
+
 ---
 
 ## Application Screenshots
