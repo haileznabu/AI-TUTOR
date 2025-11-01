@@ -550,7 +550,7 @@ If you use this project for research or publication, please cite:
 @software{aiTutor2024,
   title={AI-TUTOR: Democratizing Quality Education Through Adaptive Personalization},
   author={Your Name},
-  year={2024},
+  year={2025},
   url={https://github.com/yourusername/ai-tutor},
   note={Supporting UN Sustainable Development Goal 4: Quality Education}
 }
@@ -582,6 +582,6 @@ We are grateful to the global community of educators, researchers, and technolog
 
 ---
 
-**Last Updated**: October 30, 2024
+**Last Updated**: November 1, 2025
 **Maintained By**: AI-TUTOR Development Team
 **Status**: Active Development
