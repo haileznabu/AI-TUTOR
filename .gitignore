@@ -52,3 +52,14 @@ build/
 app.*.symbols
 app.*.map.json
 .env
+
+
+# IDE
+.vscode/
+
+# Platform-specific
+ios/
+macos/
+windows/
+linux/
+web/
