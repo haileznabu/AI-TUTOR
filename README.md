@@ -86,7 +86,7 @@ This project directly addresses these challenges through three strategic pillars
 
 ### Advanced Learning Features
 
-#### **Intelligent Content Generation**
+#### **Intelligent Content Generation** (Powered by Google Gemini 2.5 Flash)
 - **Dynamic Tutorial Creation**: AI-powered curriculum adaptation generates tutorials specifically tailored to individual learning styles, prior knowledge, and learning objectives
 - **Multi-Modal Learning Support**: Seamlessly integrates text, conceptual frameworks, and code examples across STEM and humanities disciplines
 - **Depth-Adaptive Content**: Progressively scaffolds learning from foundational concepts to advanced applications based on real-time comprehension signals
@@ -140,10 +140,10 @@ This project directly addresses these challenges through three strategic pillars
 │                                                     │
 └─────────────────────────────────────────────────────┘
                        ↕
-              ┌────────────────┐
-              │ Gemini AI API  │
-              │ (Content Gen)  │
-              └────────────────┘
+              ┌──────────────────────┐
+              │ Gemini 2.5 Flash API │
+              │   (Content Gen)      │
+              └──────────────────────┘
 ```
 
 ---
@@ -167,7 +167,7 @@ lib/
 │   └── profile_screen.dart    # User settings & preferences
 │
 ├── services/                  # Business logic & integrations
-│   ├── ai_service.dart        # Gemini API integration
+│   ├── ai_service.dart        # Gemini 2.5 Flash API integration
 │   ├── firebase_auth_service.dart # Authentication management
 │   ├── firestore_service.dart # Cloud database operations
 │   ├── learning_repository.dart # Data access abstraction
@@ -290,7 +290,7 @@ flutter pub run build_runner build
 
 ### Step 4: Gemini API Configuration
 
-Your AI-TUTOR instance requires a valid Gemini API key. The recommended method is already covered above:
+Your AI-TUTOR instance requires a valid **Google Gemini 2.5 Flash** API key. The recommended method is already covered above:
 
 #### **Using Environment File (Recommended)**
 

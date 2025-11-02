@@ -2,7 +2,7 @@
 
 ## Environment Variables Configuration
 
-This app now reads the Gemini API key from a `.env` file for better security and easier configuration.
+This app uses **Google Gemini 2.5 Flash** model and reads the API key from a `.env` file for better security and easier configuration.
 
 ### Setup Steps
 
@@ -18,7 +18,7 @@ This app now reads the Gemini API key from a `.env` file for better security and
    GEMINI_API_KEY=your_gemini_api_key_here
    ```
 
-3. **Get your Gemini API Key**:
+3. **Get your Gemini 2.5 Flash API Key**:
    - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
    - Sign in with your Google account
    - Create a new API key

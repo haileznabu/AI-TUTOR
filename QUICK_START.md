@@ -2,7 +2,7 @@
 
 ## ⚠️ IMPORTANT: Gemini API Key Required
 
-This app requires a **Google Gemini API key** to generate AI-powered learning content. Without it, you'll see an error when clicking on topics.
+This app requires a **Google Gemini 2.5 Flash API key** to generate AI-powered learning content. Without it, you'll see an error when clicking on topics.
 
 **Get your free API key here:** https://makersuite.google.com/app/apikey
 
@@ -44,7 +44,7 @@ flutter run
 ## What's New
 
 ### Environment Variables
-- Gemini API key now loads from `.env` file
+- Gemini 2.5 Flash API key now loads from `.env` file
 - No more compile-time configuration needed
 - Works on all platforms (Web, Windows, Android, iOS, macOS)
 

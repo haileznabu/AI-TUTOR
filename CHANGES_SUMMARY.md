@@ -3,7 +3,7 @@
 ## What Was Changed
 
 ### 1. Environment Variables Configuration
-The app now reads the Gemini API key from a `.env` file instead of compile-time environment variables.
+The app now uses **Google Gemini 2.5 Flash** model and reads the API key from a `.env` file instead of compile-time environment variables.
 
 #### Files Modified:
 - `pubspec.yaml` - Added `flutter_dotenv` package and configured `.env` as an asset
@@ -92,7 +92,7 @@ flutter run -d macos
    cp .env.example .env
    ```
 
-3. **Add your Gemini API key** to `.env`:
+3. **Add your Gemini 2.5 Flash API key** to `.env`:
    ```
    GEMINI_API_KEY=your_actual_api_key_here
    ```

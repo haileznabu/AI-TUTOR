@@ -1,4 +1,4 @@
-# Setting up Gemini API Key in Firestore
+# Setting up Gemini 2.5 Flash API Key in Firestore
 
 ## Option 1: Using Firebase Console (Recommended)
 
@@ -12,7 +12,7 @@
 8. Add a field:
    - Field name: `gemini_api_key`
    - Type: `string`
-   - Value: `YOUR_ACTUAL_GEMINI_API_KEY`
+   - Value: `YOUR_ACTUAL_GEMINI_2.5_FLASH_API_KEY`
 9. Click **Save**
 
 ## Option 2: Using Firebase Admin SDK or Script

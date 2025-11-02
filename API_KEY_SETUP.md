@@ -2,7 +2,7 @@
 
 ## Why do I need this?
 
-The AI Tutor app uses Google's Gemini AI to generate personalized learning content. You need an API key to enable this feature.
+The AI Tutor app uses **Google's Gemini 2.5 Flash** model to generate personalized learning content. You need an API key to enable this feature.
 
 ## Quick Setup (2 minutes)
 
