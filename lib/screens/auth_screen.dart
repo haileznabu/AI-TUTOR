@@ -278,81 +278,90 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    const AuthLogo(),
-                    const SizedBox(height: 24),
-                    Text(
-                      isSignIn ? 'Welcome Back' : 'Create Account',
-                      style: textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      isSignIn
-                          ? 'Sign in to your account to continue'
-                          : 'Join us and start your journey',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: isDark ? Colors.white70 : Colors.grey,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 32),
-                    AnimatedSwitcher(
-                      duration: kIsWeb ? const Duration(milliseconds: 150) : kAnimationNormal,
-                      child: isSignIn
-                          ? const SignInForm(key: ValueKey('SignIn'))
-                          : const SignUpForm(key: ValueKey('SignUp')),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: _handleSkip,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: isDark ? Colors.white70 : Colors.black87,
-                          side: BorderSide(color: isDark ? Colors.white.withOpacity(0.3) : Colors.grey.shade300),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: size.height - 40,
+              ),
+              child: Center(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 20),
+                        const AuthLogo(),
+                        const SizedBox(height: 24),
+                        Text(
+                          isSignIn ? 'Welcome Back' : 'Create Account',
+                          style: textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black87,
                           ),
                         ),
-                        child: const Text('Continue as Guest'),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                        const SizedBox(height: 8),
                         Text(
                           isSignIn
-                              ? "Don't have an account? "
-                              : "Already have an account? ",
+                              ? 'Sign in to your account to continue'
+                              : 'Join us and start your journey',
                           style: textTheme.bodyMedium?.copyWith(
                             color: isDark ? Colors.white70 : Colors.grey,
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                        GestureDetector(
-                          onTap: _toggleAuthMode,
-                          child: Text(
-                            isSignIn ? 'Sign Up' : 'Sign In',
-                            style: const TextStyle(
-                              color: kPrimaryColor,
-                              fontWeight: FontWeight.bold,
+                        const SizedBox(height: 32),
+                        AnimatedSwitcher(
+                          duration: kIsWeb ? const Duration(milliseconds: 150) : kAnimationNormal,
+                          child: isSignIn
+                              ? const SignInForm(key: ValueKey('SignIn'))
+                              : const SignUpForm(key: ValueKey('SignUp')),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: _handleSkip,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                              side: BorderSide(color: isDark ? Colors.white.withOpacity(0.3) : Colors.grey.shade300),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
+                            child: const Text('Continue as Guest'),
                           ),
                         ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              isSignIn
+                                  ? "Don't have an account? "
+                                  : "Already have an account? ",
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: isDark ? Colors.white70 : Colors.grey,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: _toggleAuthMode,
+                              child: Text(
+                                isSignIn ? 'Sign Up' : 'Sign In',
+                                style: const TextStyle(
+                                  color: kPrimaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
                       ],
                     ),
-                    const SizedBox(height: 20),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -558,14 +567,14 @@ class _SignUpFormState extends State<SignUpForm> {
           hintText: 'Full Name',
           icon: Icons.person_outline,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         GlassTextField(
           controller: _emailController,
           hintText: 'Email Address',
           icon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         GlassTextField(
           controller: _passwordController,
           hintText: 'Password',
@@ -580,7 +589,7 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Row(
           children: [
             Checkbox(
@@ -596,7 +605,7 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         GradientButton(
           label: 'Create Account',
           isLoading: _isLoading,
