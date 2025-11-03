@@ -160,100 +160,99 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                   color: isDark ? null : Colors.white,
                 ),
                 child: SafeArea(
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: SingleChildScrollView(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isDesktop ? 80 : 40,
-                              vertical: 20,
-                            ),
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 480),
-                              child: FadeTransition(
-                                opacity: _fadeAnimation,
-                                child: SlideTransition(
-                                  position: _slideAnimation,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        isSignIn ? 'Welcome Back' : 'Create Account',
-                                        style: TextStyle(
-                                          fontSize: isDesktop ? 36 : 28,
-                                          fontWeight: FontWeight.bold,
-                                          color: isDark ? Colors.white : Colors.black87,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        isSignIn
-                                            ? 'Sign in to your account to continue your learning journey'
-                                            : 'Join us and start your personalized learning experience',
-                                        style: TextStyle(
-                                          color: isDark ? Colors.white.withOpacity(0.6) : Colors.grey,
-                                          fontSize: isDesktop ? 16 : 14,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 48),
-                                      AnimatedSwitcher(
-                                        duration: kAnimationNormal,
-                                        child: isSignIn
-                                            ? const SignInForm(key: ValueKey('SignIn'))
-                                            : const SignUpForm(key: ValueKey('SignUp')),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: OutlinedButton(
-                                          onPressed: _handleSkip,
-                                          style: OutlinedButton.styleFrom(
-                                            foregroundColor: isDark ? Colors.white70 : Colors.black87,
-                                            side: BorderSide(color: isDark ? Colors.white.withOpacity(0.3) : Colors.grey.shade300),
-                                            padding: const EdgeInsets.symmetric(vertical: 16),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                          ),
-                                          child: const Text('Continue as Guest'),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 24),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            isSignIn
-                                                ? "Don't have an account? "
-                                                : "Already have an account? ",
-                                            style: TextStyle(
-                                              color: isDark ? Colors.white.withOpacity(0.6) : Colors.grey,
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                          GestureDetector(
-                                            onTap: _toggleAuthMode,
-                                            child: Text(
-                                              isSignIn ? 'Sign Up' : 'Sign In',
-                                              style: const TextStyle(
-                                                color: kPrimaryColor,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isDesktop ? 80 : 40,
+                      vertical: 20,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: size.height - 40,
+                        maxWidth: 480,
+                      ),
+                      child: Center(
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: SlideTransition(
+                            position: _slideAnimation,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  isSignIn ? 'Welcome Back' : 'Create Account',
+                                  style: TextStyle(
+                                    fontSize: isDesktop ? 36 : 28,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark ? Colors.white : Colors.black87,
                                   ),
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  isSignIn
+                                      ? 'Sign in to your account to continue your learning journey'
+                                      : 'Join us and start your personalized learning experience',
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white.withOpacity(0.6) : Colors.grey,
+                                    fontSize: isDesktop ? 16 : 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 48),
+                                AnimatedSwitcher(
+                                  duration: kAnimationNormal,
+                                  child: isSignIn
+                                      ? const SignInForm(key: ValueKey('SignIn'))
+                                      : const SignUpForm(key: ValueKey('SignUp')),
+                                ),
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton(
+                                    onPressed: _handleSkip,
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                                      side: BorderSide(color: isDark ? Colors.white.withOpacity(0.3) : Colors.grey.shade300),
+                                      padding: const EdgeInsets.symmetric(vertical: 16),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: const Text('Continue as Guest'),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      isSignIn
+                                          ? "Don't have an account? "
+                                          : "Already have an account? ",
+                                      style: TextStyle(
+                                        color: isDark ? Colors.white.withOpacity(0.6) : Colors.grey,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: _toggleAuthMode,
+                                      child: Text(
+                                        isSignIn ? 'Sign Up' : 'Sign In',
+                                        style: const TextStyle(
+                                          color: kPrimaryColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
