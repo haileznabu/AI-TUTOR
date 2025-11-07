@@ -19,32 +19,32 @@ No installation required - start learning immediately in your browser. The web a
 ## Application Screenshots
 
 ### Home Screen - Personalized Learning Hub
-<img src="assets/images/home_screen.png" alt="Home Screen" width="600">
+<img src="assets/images/home_screen.png" alt="Home Screen" width="200">
 
 *Browse topics, continue your learning journey, and discover AI-powered recommendations tailored to your interests*
 
 ### Topic Learning - Interactive Tutorials
-<img src="assets/images/topic_detail.png" alt="Topic Detail" width="600">
+<img src="assets/images/topic_detail.png" alt="Topic Detail" width="200">
 
 *Step-by-step AI-generated tutorials with code examples, explanations, and progress tracking*
 
 ### AI Chat - Your Personal Tutor
-<img src="assets/images/chat_screen.png" alt="Chat Screen" width="600">
+<img src="assets/images/chat_screen.png" alt="Chat Screen" width="200">
 
 *Ask questions anytime, get instant explanations, and receive personalized learning guidance*
 
 ### Progress Analytics - Track Your Growth
-<img src="assets/images/progress_screen.png" alt="Progress Screen" width="600">
+<img src="assets/images/progress_screen.png" alt="Progress Screen" width="200">
 
 *Visualize your learning journey with detailed analytics, achievements, and weekly activity insights*
 
 ### Profile & Settings
-<img src="assets/images/profile_screen.png" alt="Profile Screen" width="600">
+<img src="assets/images/profile_screen.png" alt="Profile Screen" width="200">
 
 *Monitor your stats, manage preferences, and track your overall learning progress*
 
 ### Quiz Assessment - Test Your Knowledge
-<img src="assets/images/quiz_screen.png" alt="Quiz Screen" width="600">
+<img src="assets/images/quiz_screen.png" alt="Quiz Screen" width="200">
 
 *Interactive quizzes with instant feedback and detailed explanations to reinforce your learning*
 
@@ -611,7 +611,7 @@ This project is licensed under the **MIT License**, enabling free use, modificat
 If you use this project for research or publication, please cite:
 
 ```bibtex
-@software{aiTutor2024,
+@software{aiTutor2025,
   title={AI-TUTOR: Democratizing Quality Education Through Adaptive Personalization},
   author={Your Name},
   year={2025},
