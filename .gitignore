@@ -57,8 +57,7 @@ app.*.map.json
 # IDE
 .vscode/
 
-# Platform-specific
-ios/
+# Platform-specifi
 macos/
 windows/
 linux/
